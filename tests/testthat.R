@@ -8,5 +8,8 @@
 
 library(testthat)
 library(ADSPlanner)
+library(mockr)
+library(openxlsx)
+library(readODS)
 
 test_check("ADSPlanner")
