@@ -16,7 +16,9 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports:
     openxlsx,
-    readODS
+    readODS,
+    shiny (>= 1.9.1),
+    bslib (>= 0.8.0)
 Suggests: 
     testthat (>= 3.0.0),
     mockr
