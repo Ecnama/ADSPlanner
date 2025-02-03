@@ -66,25 +66,22 @@ parse_file <- function(file_path) {
     })
     # Build the result data frame
     data <- data.frame(
-        Nom = rep(NA_character_, nrow(file_data)),
-        Prenom = rep(NA_character_, nrow(file_data)),
-        Filiere = rep(NA_character_, nrow(file_data)),
-        V1 = rep(NA_character_, nrow(file_data)),
-        V2 = rep(NA_character_, nrow(file_data)),
-        V3 = rep(NA_character_, nrow(file_data)),
-        V4 = rep(NA_character_, nrow(file_data)),
-        V5 = rep(NA_character_, nrow(file_data)),
-        V6 = rep(NA_character_, nrow(file_data)),
-        V7 = rep(NA_character_, nrow(file_data)),
-        Aff_V1_S1 = rep(NA_character_, nrow(file_data)),
-        Aff_V1_S2 = rep(NA_character_, nrow(file_data)),
-        Aff_V1_S3 = rep(NA_character_, nrow(file_data)),
-        Aff_V2_S1 = rep(NA_character_, nrow(file_data)),
-        Aff_V2_S2 = rep(NA_character_, nrow(file_data)),
-        Aff_V2_S3 = rep(NA_character_, nrow(file_data)),
-        Aff_V3_S1 = rep(NA_character_, nrow(file_data)),
-        Aff_V3_S2 = rep(NA_character_, nrow(file_data)),
-        Aff_V3_S3 = rep(NA_character_, nrow(file_data))
+        Nom = character(0),
+        Prenom = character(0),
+        Filiere = character(0),
+        V1 = character(0),
+        V2 = character(0),
+        V3 = character(0),
+        V4 = character(0),
+        V5 = character(0),
+        V6 = character(0),
+        V7 = character(0),
+        Aff_depart_1 = character(0), # Affected departments (order doesn't matter)
+        Aff_depart_2 = character(0),
+        Aff_depart_3 = character(0),
+        Aff_session_1 = character(0), # Three columns for final affectations of all the sessions
+        Aff_session_2 = character(0),
+        Aff_session_3 = character(0)
     )
     # Process each row of the file's data
     for (i in seq_len(nrow(file_data))) {

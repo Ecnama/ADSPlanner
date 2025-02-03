@@ -30,10 +30,13 @@ ui <- page_sidebar(
         nav_panel(
             "Affectations d\u00E9partements",
             div(
-                actionButton("assign_hard", "Affectation \"dure\""),
-                actionButton("assign_real", "Affectation r\u00E9elle"),
+                actionButton("assign_depart_hard_1", "Affectation \"dure\" voeu 1", width = 200),
+                actionButton("assign_depart_hard_2", "Affectation \"dure\" voeu 2", width = 200),
+                actionButton("assign_depart_hard_3", "Affectation \"dure\" voeu 3", width = 200),
+                actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
+                actionButton("assign_depart_erase", "Effacer toutes affectations", width = 200),
             ),
-            "Not implemented yet.",
+            uiOutput("aff_depart"),
         ),
         nav_panel(
             "Affectations sessions",

@@ -160,13 +160,10 @@ parse_file_output <- data.frame(
     V5 = c("INFO", NA_character_, NA_character_),
     V6 = c("GMA", NA_character_, NA_character_),
     V7 = c("GPM", NA_character_, NA_character_),
-    Aff_V1_S1 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V1_S2 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V1_S3 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V2_S1 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V2_S2 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V2_S3 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V3_S1 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V3_S2 = c(NA_character_, NA_character_, NA_character_),
-    Aff_V3_S3 = c(NA_character_, NA_character_, NA_character_)
+    Aff_depart_1 = c(NA_character_, NA_character_, NA_character_),
+    Aff_depart_2 = c(NA_character_, NA_character_, NA_character_),
+    Aff_depart_3 = c(NA_character_, NA_character_, NA_character_),
+    Aff_session_1 = c(NA_character_, NA_character_, NA_character_),
+    Aff_session_2 = c(NA_character_, NA_character_, NA_character_),
+    Aff_session_3 = c(NA_character_, NA_character_, NA_character_)
 )
