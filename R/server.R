@@ -1,8 +1,11 @@
 library(shiny)
 library(DT)
+library(ggplot2)
+data(mpg)
 
 source("R/input.R")
 source("R/affectations.R")
+source("R/DTutilities.R")
 
 #' Backend server logic
 #'
@@ -55,7 +58,12 @@ server <- function(input, output) {
     output$vis_table <- DT::renderDataTable(
         {
             filtered_df()[, !grepl("^Aff", names(filtered_df()))]
-        }
+        },
+        options = list(
+            language = dt_translation
+        ),
+        selection = "none",
+        server = FALSE
     )
 
     output$vis <- renderUI({
@@ -77,7 +85,19 @@ server <- function(input, output) {
                 paste(x, collapse = ", ")
             })
             filtered_df_depart[, !grepl("^Aff", names(filtered_df_depart))]
-        }
+        },
+        extensions = c("Select", "Buttons", "Scroller"),
+        options = list(
+            language = dt_translation,
+            select = list(style = "multi+shift", items = "row"),
+            dom = "Blfrtip",
+            buttons = dt_select_deselect_buttons,
+            deferRender = TRUE,
+            scrollY = 320,
+            scroller = TRUE
+        ),
+        selection = "none",
+        server = FALSE
     )
 
     output$aff_depart <- renderUI({
