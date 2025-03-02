@@ -1,4 +1,5 @@
 library(shiny)
+library(DT)
 
 source("R/input.R")
 source("R/affectations.R")
@@ -48,31 +49,24 @@ server <- function(input, output) {
         if (length(input$select_filiere) > 0) {
             filtered_df <- filtered_df[filtered_df$Filiere %in% input$select_filiere, ]
         }
-        filtered_df <- filtered_df[
-            grepl(tolower(input$filter_search), tolower(filtered_df[["Nom"]]), fixed = TRUE)
-            | grepl(tolower(input$filter_search), tolower(filtered_df[["Prenom"]]), fixed = TRUE)
-            | grepl(tolower(input$filter_search), tolower(paste(filtered_df[["Prenom"]], filtered_df[["Nom"]])), fixed = TRUE)
-            | grepl(tolower(input$filter_search), tolower(paste(filtered_df[["Nom"]], filtered_df[["Prenom"]])), fixed = TRUE),
-        ]
         filtered_df
     })
 
-    output$vis_table <- renderTable(
+    output$vis_table <- DT::renderDataTable(
         {
             filtered_df()[, !grepl("^Aff", names(filtered_df()))]
-        },
-        striped = TRUE
+        }
     )
 
     output$vis <- renderUI({
         if (is.null(input$file)) {
             HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
         } else {
-            tableOutput("vis_table")
+            DT::dataTableOutput("vis_table")
         }
     })
 
-    output$aff_depart_table <- renderTable(
+    output$aff_depart_table <- DT::renderDataTable(
         {
             filtered_df_depart <- filtered_df()
             filtered_df_depart[["D\u00E9partements affect\u00E9s"]] <- apply(filtered_df_depart[, grepl("^Aff_depart_", names(filtered_df_depart))], 1, function(x) {
@@ -83,15 +77,14 @@ server <- function(input, output) {
                 paste(x, collapse = ", ")
             })
             filtered_df_depart[, !grepl("^Aff", names(filtered_df_depart))]
-        },
-        striped = TRUE
+        }
     )
 
     output$aff_depart <- renderUI({
         if (is.null(input$file)) {
             HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
         } else {
-            tableOutput("aff_depart_table")
+            DT::dataTableOutput("aff_depart_table")
         }
     })
 }

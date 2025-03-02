@@ -18,7 +18,8 @@ Imports:
     openxlsx,
     readODS,
     shiny (>= 1.9.1),
-    bslib (>= 0.8.0)
+    bslib (>= 0.8.0),
+    DT
 Suggests: 
     testthat (>= 3.0.0),
     mockr

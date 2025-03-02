@@ -15,17 +15,12 @@ ui <- page_sidebar(
         card(
             "Filtres",
             uiOutput("filter_filiere"),
-            textInput("filter_search", "Rechercher :"),
         ),
     ),
     navset_tab(
         nav_panel(
             "Visualisation v\u0153ux",
             uiOutput("vis"),
-        ),
-        nav_panel(
-            "Sans r\u00E9ponse",
-            "Not implemented yet.",
         ),
         nav_panel(
             "Affectations d\u00E9partements",
