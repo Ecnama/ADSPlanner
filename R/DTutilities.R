@@ -1,3 +1,4 @@
+# French localization for DataTables
 dt_translation <- list(
     emptyTable = "Aucune donnée disponible",
     info = "Éléments _START_ à _END_ affichés sur _TOTAL_",
@@ -18,6 +19,7 @@ dt_translation <- list(
     )
 )
 
+# Buttons that allow to select or deselect all the rows displayed
 dt_select_deselect_buttons <- list(list(
     extend = "selectAll",
     text = "Sélectionner affichés",
@@ -32,4 +34,11 @@ dt_select_deselect_buttons <- list(list(
         dt.rows({ search: 'applied'}).select();
         dt.rows({ search: 'applied'}).deselect();
     }")
+))
+
+# Global options for all DataTables
+options(DT.options = list(
+    language = dt_translation,
+    scrollY = 320,
+    scroller = TRUE
 ))
