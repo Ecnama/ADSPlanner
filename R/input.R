@@ -24,6 +24,7 @@ read_file <- function(file_path) {
     } else {
         stop("File type not supported")
     }
+
     file_data
 }
 
@@ -53,6 +54,7 @@ synthesize_wishes <- function(wishes) {
     } else {
         stop("Unknown filiere")
     }
+
     result
 }
 
@@ -102,5 +104,6 @@ parse_file <- function(file_path) {
         })
         data[i, 4:(length(synthesized_wishes) + 3)] <- synthesized_wishes
     }
+
     data
 }

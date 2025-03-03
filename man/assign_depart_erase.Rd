@@ -4,10 +4,12 @@
 \alias{assign_depart_erase}
 \title{Erase all affected departments}
 \usage{
-assign_depart_erase(df)
+assign_depart_erase(df, selection)
 }
 \arguments{
 \item{df}{The data frame with the students and their wishes}
+
+\item{selection}{The indices of students to erase}
 }
 \description{
 Erase all affected departments
