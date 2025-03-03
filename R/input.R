@@ -24,7 +24,7 @@ read_file <- function(file_path) {
     } else {
         stop("File type not supported")
     }
-    return(file_data)
+    file_data
 }
 
 #' Synthesizes a student's wishes from multiple columns per filiere to 7 columns for all filieres
@@ -53,7 +53,7 @@ synthesize_wishes <- function(wishes) {
     } else {
         stop("Unknown filiere")
     }
-    return(result)
+    result
 }
 
 #' Parses the file to build a clean data frame
@@ -102,5 +102,5 @@ parse_file <- function(file_path) {
         })
         data[i, 4:(length(synthesized_wishes) + 3)] <- synthesized_wishes
     }
-    return(data)
+    data
 }
