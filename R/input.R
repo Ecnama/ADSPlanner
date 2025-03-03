@@ -2,6 +2,7 @@ library(openxlsx)
 library(readODS)
 
 # Prefixes of the head of the wishes columns
+Q1_PREFIX <- "Q01_Filiere"
 Q2_PREFIX <- "Q02_Voeux->"
 Q3_PREFIX <- "Q03_VoeuxEMIR->"
 Q4_PREFIX <- "Q04_voeuxMICA->"
@@ -13,11 +14,13 @@ Q4_PREFIX <- "Q04_voeuxMICA->"
 read_file <- function(file_path) {
     # Check if file extension is supported (xlsx or ods)
     if (grepl(".xlsx", file_path)) {
-        file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, cols = (8:25), sep.names = " ")
-        file_data <- file_data[, c(8:25)]
+        file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
+        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
+        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
     } else if (grepl(".ods", file_path)) {
         file_data <- readODS::read_ods(file_path, sheet = 1, col_names = TRUE, as_tibble = FALSE, na = "NULL")
-        file_data <- file_data[, c(8:25)]
+        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
+        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
     } else {
         stop("File type not supported")
     }
@@ -68,6 +71,7 @@ parse_file <- function(file_path) {
     data <- data.frame(
         Nom = character(0),
         Prenom = character(0),
+        Classement = integer(0),
         Filiere = character(0),
         V1 = character(0),
         V2 = character(0),
@@ -89,13 +93,14 @@ parse_file <- function(file_path) {
         name_split <- strsplit(file_data[i, 1], split = " ")[[1]] # We assume that the first and last name are separated by a space
         data[i, 1] <- name_split[2]
         data[i, 2] <- name_split[1]
+        data[i, 3] <- as.integer(file_data[i, 2])
         # Wishes
         tryCatch({
             synthesized_wishes <- synthesize_wishes(file_data[i, 3:18])
         }, error = function(e) {
             stop("Error while synthesizing the wishes (l.", i, "): ", conditionMessage(e))
         })
-        data[i, 3:(length(synthesized_wishes) + 2)] <- synthesized_wishes
+        data[i, 4:(length(synthesized_wishes) + 3)] <- synthesized_wishes
     }
     return(data)
 }

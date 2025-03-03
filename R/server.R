@@ -12,7 +12,9 @@ server <- function(input, output) {
 
     observe({
         if (!is.null(input$file)) {
-            df(parse_file(input$file$datapath[1]))
+            data <- parse_file(input$file$datapath[1])
+            as.integer(data$Classement)
+            df(data)
             showNotification("Fichier charg\u00E9 avec succ\u00E8s.", type = "message")
         }
     })

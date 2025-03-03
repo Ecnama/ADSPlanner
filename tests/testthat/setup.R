@@ -1,6 +1,6 @@
 read_file_output <- data.frame(
     "Nom complet" = c("Laurence Marchand", "Laurence ROZE", "Laurence Roze"),
-    "Nom d’utilisateur" = c("roze@insa-rennes.fr", "roze@inria.fr", "lroze@univ-rennes1.fr"),
+    "Classement" = c(1, 2, 3),
     "Q01_Filiere" = c("1 : FC_FIRE (Filière classique ou filière internationale)", "2 : EMIR", "3 : MICA"),
     "Q02_Voeux->EII" = c(1, NA, NA),
     "Q02_Voeux->E&T" = c(2, NA, NA),
@@ -22,7 +22,7 @@ read_file_output <- data.frame(
 
 read_file_output_invalid <- data.frame(
     "Nom complet" = c("Laurence Marchand", "Laurence ROZE", "Laurence Roze"),
-    "Nom d’utilisateur" = c("roze@insa-rennes.fr", "roze@inria.fr", "lroze@univ-rennes1.fr"),
+    "Classement" = c(1, 2, 3),
     "Q01_Filiere" = c("1 : FC_FIRE (Filière classique ou filière internationale)", "4 : Filière that doesn't exist", "3 : MICA"),
     "Q02_Voeux->EII" = c(1, NA, NA),
     "Q02_Voeux->E&T" = c(2, NA, NA),
@@ -152,6 +152,7 @@ synth_wishes_input_invalid <- data.frame(
 parse_file_output <- data.frame(
     Nom = c("Marchand", "ROZE", "Roze"),
     Prenom = c("Laurence", "Laurence", "Laurence"),
+    Classement = c(1, 2, 3),
     Filiere = c("FC_FIRE", "EMIR", "MICA"),
     V1 = c("EII", "E&T", "MA"),
     V2 = c("E&T", "GPM", "INFO"),
