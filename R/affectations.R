@@ -5,6 +5,50 @@ NB_SESSIONS <- c(
     "FISP" = 2
 )
 
+#' Function used by server to handle affectations
+#'
+#' @param input Input data from the frontend
+#' @param output Output data the frontend will receive
+#' @param df The reactive data frame of students's wishes and affectations
+handle_affectations <- function(input, output, df) {
+    try_affectation <- function(number) {
+        if (is.null(df())) {
+            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return()
+        }
+
+        df(assign_depart_hard(df(), input$aff_depart_table_rows_selected, number))
+
+        showNotification(paste("D\u00E9partements des voeux ", number, " affect\u00E9s."), type = "message")
+    }
+
+    observeEvent(input$assign_depart_hard_1, try_affectation(1))
+
+    observeEvent(input$assign_depart_hard_2, try_affectation(2))
+
+    observeEvent(input$assign_depart_hard_3, try_affectation(3))
+
+    observeEvent(input$assign_depart_real, {
+        if (is.null(df())) {
+            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return()
+        }
+
+        showNotification("Not implemented yet.", type = "warning")
+    })
+
+    observeEvent(input$assign_depart_erase, {
+        if (is.null(df())) {
+            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return()
+        }
+
+        df(assign_depart_erase(df(), input$aff_depart_table_rows_selected))
+
+        showNotification("Affectations de d\u00E9partements effac\u00E9es.", type = "message")
+    })
+}
+
 #' Erase all affected departments
 #'
 #' @param df The data frame with the students and their wishes
