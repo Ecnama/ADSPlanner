@@ -4,10 +4,12 @@
 \alias{assign_depart_hard}
 \title{Assign departments to students according to their wishes, regardless of the number of places}
 \usage{
-assign_depart_hard(df, wish_number)
+assign_depart_hard(df, selection, wish_number)
 }
 \arguments{
 \item{df}{The data frame with the students and their wishes}
+
+\item{selection}{The indices of students to assign}
 
 \item{wish_number}{The number of the wish to assign}
 }

@@ -1,7 +1,5 @@
 library(shiny)
 library(DT)
-library(ggplot2)
-data(mpg)
 
 source("R/input.R")
 source("R/affectations.R")
@@ -89,7 +87,7 @@ server <- function(input, output) {
         extensions = c("Select", "Buttons", "Scroller"),
         options = list(
             select = list(style = "multi+shift", items = "row"),
-            dom = "Blfrtip",
+            dom = '<"top"lfB>rt<"bottom"ip><"clear">',
             buttons = dt_select_deselect_buttons,
             deferRender = TRUE,
             scrollY = 320,
@@ -105,7 +103,7 @@ server <- function(input, output) {
         } else {
             c(
                 DT::dataTableOutput("aff_depart_table"),
-                "Cliquez sur les lignes pour les sélectionner. Les modifications ne s'appliqueront qu'aux lignes sélectionnées."
+                "Cliquez sur les lignes pour les s\u00E9lectionner. Les modifications ne s'appliqueront qu'aux lignes s\u00E9lectionn\u00E9es."
             )
         }
     })
