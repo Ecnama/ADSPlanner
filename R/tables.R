@@ -14,7 +14,7 @@ display_tables <- function(input, output, df) {
         if (is.null(input$file)) {
             HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
         } else {
-            DT::DTOutput("vis_table")
+            DTOutput("vis_table")
         }
     })
 
@@ -23,7 +23,7 @@ display_tables <- function(input, output, df) {
             HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
         } else {
             c(
-                DT::DTOutput("aff_depart_table"),
+                DTOutput("aff_depart_table"),
                 "Cliquez sur les lignes pour les s\u00E9lectionner. Les modifications ne s'appliqueront qu'aux lignes s\u00E9lectionn\u00E9es."
             )
         }
@@ -31,7 +31,7 @@ display_tables <- function(input, output, df) {
 
     # Table definitions
 
-    output$vis_table <- DT::renderDT(
+    output$vis_table <- renderDT(
         {
             df()[, !grepl("^Aff", names(df()))]
         },
@@ -41,7 +41,7 @@ display_tables <- function(input, output, df) {
         server = FALSE
     )
 
-    output$aff_depart_table <- DT::renderDT(
+    output$aff_depart_table <- renderDT(
         {
             df_depart <- df()
             df_depart[["D\u00E9partements affect\u00E9s"]] <- apply(df_depart[, grepl("^Aff_depart_", names(df_depart))], 1, function(x) {
