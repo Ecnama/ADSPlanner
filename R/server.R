@@ -38,14 +38,14 @@ server <- function(input, output) {
         }
     )
 
-    output$filter_filiere <- renderUI(
-        selectInput(
-            "select_filiere",
-            "Fili\u00E8res :",
-            df()$Filiere,
-            multiple = TRUE,
-        )
-    )
+    # output$filter_filiere <- renderUI(
+    #     selectInput(
+    #         "select_filiere",
+    #         "Fili\u00E8res :",
+    #         df()$Filiere,
+    #         multiple = TRUE,
+    #     )
+    # )
 
     filtered_df <- reactive({
         filtered_df <- df()
@@ -59,9 +59,8 @@ server <- function(input, output) {
         {
             filtered_df()[, !grepl("^Aff", names(filtered_df()))]
         },
-        options = list(
-            language = dt_translation
-        ),
+        extensions = c("Scroller"),
+        filter = "top",
         selection = "none",
         server = FALSE
     )
@@ -76,7 +75,7 @@ server <- function(input, output) {
 
     output$aff_depart_table <- DT::renderDataTable(
         {
-            filtered_df_depart <- filtered_df()
+            filtered_df_depart <- df()
             filtered_df_depart[["D\u00E9partements affect\u00E9s"]] <- apply(filtered_df_depart[, grepl("^Aff_depart_", names(filtered_df_depart))], 1, function(x) {
                 x <- x[!is.na(x)]
                 if (length(x) == 0) {
@@ -86,9 +85,9 @@ server <- function(input, output) {
             })
             filtered_df_depart[, !grepl("^Aff", names(filtered_df_depart))]
         },
+        filter = "top",
         extensions = c("Select", "Buttons", "Scroller"),
         options = list(
-            language = dt_translation,
             select = list(style = "multi+shift", items = "row"),
             dom = "Blfrtip",
             buttons = dt_select_deselect_buttons,
@@ -104,7 +103,10 @@ server <- function(input, output) {
         if (is.null(input$file)) {
             HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
         } else {
-            DT::dataTableOutput("aff_depart_table")
+            c(
+                DT::dataTableOutput("aff_depart_table"),
+                "Cliquez sur les lignes pour les sélectionner. Les modifications ne s'appliqueront qu'aux lignes sélectionnées."
+            )
         }
     })
 }
@@ -121,7 +123,7 @@ handle_affectations <- function(input, output, df) {
             return()
         }
 
-        df(assign_depart_hard(df(), number))
+        df(assign_depart_hard(df(), input$aff_depart_table_rows_selected, number))
 
         showNotification(paste("D\u00E9partements des voeux ", number, " affect\u00E9s."), type = "message")
     }
@@ -147,7 +149,7 @@ handle_affectations <- function(input, output, df) {
             return()
         }
 
-        df(assign_depart_erase(df()))
+        df(assign_depart_erase(df(), input$aff_depart_table_rows_selected))
 
         showNotification("Affectations de d\u00E9partements effac\u00E9es.", type = "message")
     })

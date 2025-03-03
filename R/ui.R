@@ -12,10 +12,10 @@ ui <- page_sidebar(
             textInput("download_name", "Nom du fichier d'affectations", value = "affectations"),
             uiOutput("download_button"),
         ),
-        card(
-            "Filtres",
-            uiOutput("filter_filiere"),
-        ),
+        # card(
+        #     "Filtres",
+        #     uiOutput("filter_filiere"),
+        # ),
     ),
     navset_tab(
         nav_panel(
