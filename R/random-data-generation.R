@@ -1,54 +1,79 @@
 library(openxlsx)
 
-prenoms <- c("Hector","Mari","Amance","Peter","Nathalie","Agathe","Romain","Eve","Marc","Enzo")
-noms <- c("Dupont","Nguyen","Martin","Garcia","Fouquier","Dubois","Jack","Boisu","Zaky","Mathy")
-filiere <- c(rep("EMIR",30),rep("MICA",30),rep("CLASSIQUE",140))
+library(roxygen2)
 
-#réponses possibles
-reponse_classique <- c("EII","MA","INFO","ET","GPM","GMA","GCU")
-reponse_emir <- c("EII","INFO","GPM","ET")
-reponse_mica <- c("GCU","MA","GMA","INFO")
+#' Lists of first names/last names/sector to generate fake students
+#'
+#' @format a vector with first names / last names / sectors
+sample_first_name <- c("Hector","Mari","Amance","Peter","Nathalie","Agathe","Romain","Eve","Marc","Enzo")
+sample_last_name <- c("Dupont","Nguyen","Martin","Garcia","Fouquier","Dubois","Jack","Boisu","Zaky","Mathy")
+sector <- c(rep("EMIR",30),rep("MICA",30),rep("CLASSIQUE",140))
 
-choix_colonnes <- c(
-  paste0("Q02_Voeux->", reponse_classique),
-  paste0("Q03_VoeuxEMIR->", reponse_emir),
-  paste0("Q04_voeuxMICA->", reponse_mica)
+#' lists of available answers for each sector
+#'
+#' @format a vector with the answers
+classic_answer <- c("EII","MA","INFO","ET","GPM","GMA","GCU")
+emir_answer <- c("EII","INFO","GPM","ET")
+mica_answer <- c("GCU","MA","GMA","INFO")
+
+column_choice <- c(
+  paste0("Q02_Voeux->", classic_answer),
+  paste0("Q03_VoeuxEMIR->", emir_answer),
+  paste0("Q04_voeuxMICA->", mica_answer)
 )
 
-nb_etudiants <- 200
+#' quantity of students to generate
+#' @format integer
+students_quantity <- 200
 
+#' generates a dataframe of the students with random informations (names/lastnames/sector)
+#'
+#' @return dataframe with student's infos
 df <- data.frame(
-  prenom = sample(prenoms, nb_etudiants, replace = TRUE),
-  nom = sample(noms, nb_etudiants, replace = TRUE),
-  filiere = sample(filiere, nb_etudiants, replace = TRUE)
+  first_name = sample(sample_first_name, students_quantity, replace = TRUE),
+  last_name = sample(sample_last_name, students_quantity, replace = TRUE),
+  sector = sample(sector, students_quantity, replace = TRUE)
 )
 
-generer_voeux <- function(filiere) {
-  result <- rep(NA, length(choix_colonnes))
-  names(result) <- choix_colonnes
+#' Generates student's wishs in fonction of their sector (MICA/EMIR/CLASSIQUE)
+#' 
+#'
+#' @param sector "CLASSIQUE", "EMIR" ou "MICA".
+#' @return a vector with attributed wishes
+wishes_generation <- function(sector) {
+  result <- rep(NA, length(column_choice))
+  names(result) <- column_choice
   
-  if (filiere == "CLASSIQUE") {
-    classement <- sample(reponse_classique)
-    result[paste0("Q02_Voeux->", classement)] <- 1:7
-  } else if (filiere == "EMIR") {
-    classement <- sample(reponse_emir)
-    result[paste0("Q03_VoeuxEMIR->", classement)] <- 1:4
-  } else if (filiere == "MICA") {
-    classement <- sample(reponse_mica)
-    result[paste0("Q04_voeuxMICA->", classement)] <- 1:4
-  }
+  if (sector == "CLASSIQUE") {
+      ranking <- sample(classic_answer)
+      result[paste0("Q02_Voeux->", ranking)] <- 1:7
+  } else if (sector == "EMIR") {
+      ranking <- sample(emir_answer)
+      result[paste0("Q03_VoeuxEMIR->", ranking)] <- 1:4
+  } else if (sector == "MICA") {
+      ranking <- sample(mica_answer)
+      result[paste0("Q04_voeuxMICA->", ranking)] <- 1:4
+  } 
   return(result)
 }
 
-# ajout des voeux
-df_voeux <- t(apply(df, 1, function(row) {
-  generer_voeux(row["filiere"])
+#' adds the generated wishes to the dataframe
+#'
+#' applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
+#'
+#' @param df dataframe with the student's infos
+#' @return a dataframe with the wishes
+df_wishes <- t(apply(df, 1, function(row) {
+    wishes_generation(row["sector"])
 }))
-df_voeux <- as.data.frame(df_voeux)
+df_wishes <- as.data.frame(df_wishes)
 
+#' fusion the dataframes to create the final one
+#'
+#' @param df dataframe with the student's infos
+#' @param df_wishes dataframe with the wishes added to the student's infos
+df_final <- cbind(df, df_wishes)
 
-# fusion
-df_final <- cbind(df, df_voeux)
-
-# affichage
+#' saves the dataframe in an excel file
+#'
 write.xlsx(df_final,"resultatfinal.xlsx")
