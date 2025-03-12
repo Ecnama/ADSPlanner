@@ -1,16 +1,11 @@
 library(openxlsx)
-library(roxygen2)
 
-#' Lists of first names/last names/sector to generate fake students
-#'
-#' @format a vector with first names / last names / sectors
+# Lists of first names/last names/sector to generate fake students
 sample_first_name <- c("Hector","Mari","Amance","Peter","Nathalie","Agathe","Romain","Eve","Marc","Enzo")
 sample_last_name <- c("Dupont","Nguyen","Martin","Garcia","Fouquier","Dubois","Jack","Boisu","Zaky","Mathy")
 sector <- c(rep("EMIR",30),rep("MICA",30),rep("CLASSIQUE",140))
 
-#' lists of available answers for each sector
-#'
-#' @format a vector with the answers
+# lists of available answers for each sector
 classic_answer <- c("EII","MA","INFO","ET","GPM","GMA","GCU")
 emir_answer <- c("EII","INFO","GPM","ET")
 mica_answer <- c("GCU","MA","GMA","INFO")
@@ -21,8 +16,7 @@ column_choice <- c(
   paste0("Q04_voeuxMICA->", mica_answer)
 )
 
-#' quantity of students to generate
-#' @format integer
+# quantity of students to generate
 students_quantity <- 200
 
 #' generates a dataframe of the students with random informations (names/lastnames/sector)
@@ -56,23 +50,17 @@ wishes_generation <- function(sector) {
   return(result)
 }
 
-#' adds the generated wishes to the dataframe
-#'
 #' applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
-#'
-#' @param df dataframe with the student's infos
-#' @return a dataframe with the wishes
-df_wishes <- t(apply(df, 1, function(row) {
-    wishes_generation(row["sector"])
-}))
-df_wishes <- as.data.frame(df_wishes)
-
 #' fusion the dataframes to create the final one
-#'
+#' 
 #' @param df dataframe with the student's infos
 #' @param df_wishes dataframe with the wishes added to the student's infos
-df_final <- cbind(df, df_wishes)
-
-#' saves the dataframe in an excel file
-#'
-write.xlsx(df_final,"resultatfinal.xlsx")
+#' @return a dataframe with the wishes
+final_dataframe <- function(){
+  df_wishes <- t(apply(df, 1, function(row) {
+    wishes_generation(row["sector"])
+  }))
+  df_wishes <- as.data.frame(df_wishes)
+  df_final <- cbind(df, df_wishes)
+  write.xlsx(df_final,"resultatfinal.xlsx")
+}
