@@ -22,6 +22,22 @@ server <- function(input, output) {
 
     handle_affectations(input, output, df)
 
+    output$recuperation_button <- renderUI({
+        downloadButton("recuperation_capacities", paste("Valider", sep=""))
+    })
+
+    output$recuperation_capacities <- renderTable({
+        capacities <- c(
+            "EII" = input$capacity_EII,
+            "E&T" = input$capacity_EetT,
+            "INFO" = input$capacity_INFO,
+            "MA" = input$capacity_MA,
+            "GCU" = input$capacity_GCU,
+            "GMA" = input$capacity_GMA,
+            "GPM" = input$capacity_GPM
+        )
+    })
+
     output$download_button <- renderUI({
         downloadButton("download", paste("T\u00E9l\u00E9charger ", input$download_name, ".xlsx", sep = ""))
     })

@@ -5,6 +5,16 @@ NB_SESSIONS <- c(
     "FISP" = 2
 )
 
+NB_PLACES_PAR_JOUR <- c(
+    "EII" = 30,
+    "E&T" = 30,
+    "INFO" = 30,
+    "MA" = 30,
+    "GCU" = 30,
+    "GMA" = 30,
+    "GPM" = 30
+)
+
 #' Function used by server to handle affectations
 #'
 #' @param input Input data from the frontend
