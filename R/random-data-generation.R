@@ -6,13 +6,13 @@ sample_last_name <- c("Dupont", "Nguyen", "Martin", "Garcia", "Fouquier", "Duboi
 sector <- c(rep("EMIR", 30), rep("MICA", 30), rep("CLASSIQUE", 140))
 
 # lists of available answers for each sector
-classic_answer <- c("EII", "MA" ,"INFO", "ET", "GPM", "GMA", "GCU")
+classic_answer <- c("EII", "MA", "INFO", "ET", "GPM", "GMA", "GCU")
 emir_answer <- c("EII", "INFO", "GPM", "ET")
 mica_answer <- c("GCU", "MA", "GMA", "INFO")
 
 column_choice <- c(
-    paste0("Q02_Voeux->", classic_answer), 
-    paste0("Q03_VoeuxEMIR->", emir_answer), 
+    paste0("Q02_Voeux->", classic_answer),
+    paste0("Q03_VoeuxEMIR->", emir_answer),
     paste0("Q04_voeuxMICA->", mica_answer)
 )
 
@@ -35,7 +35,6 @@ df <- data.frame(
 wishes_generation <- function(sector) {
     result <- rep(NA, length(column_choice))
     names(result) <- column_choice
-  
     if (sector == "CLASSIQUE") {
         ranking <- sample(classic_answer)
         result[paste0("Q02_Voeux->", ranking)] <- 1:7
@@ -45,18 +44,18 @@ wishes_generation <- function(sector) {
     }else if (sector == "MICA") {
         ranking <- sample(mica_answer)
         result[paste0("Q04_voeuxMICA->", ranking)] <- 1:4
-    } 
+    }
     return(result)
 }
 
 #' applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
 #' fusion the dataframes to create the final one
-#' 
+#'
 #' @param df dataframe with the student's infos
 #' @return a dataframe with the wishes
 final_dataframe <- function(df) {
     df_wishes <- t(apply(df, 1, function(row) {
-      wishes_generation(row[["sector"]])
+        wishes_generation(row[["sector"]])
     }))
     df_wishes <- as.data.frame(df_wishes)
     df_final <- cbind(df, df_wishes)
