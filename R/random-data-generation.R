@@ -54,13 +54,13 @@ wishes_generation <- function(sector) {
 #' fusion the dataframes to create the final one
 #' 
 #' @param df dataframe with the student's infos
-#' @param df_wishes dataframe with the wishes added to the student's infos
 #' @return a dataframe with the wishes
-final_dataframe <- function(){
+final_dataframe <- function(df){
   df_wishes <- t(apply(df, 1, function(row) {
     wishes_generation(row["sector"])
   }))
   df_wishes <- as.data.frame(df_wishes)
   df_final <- cbind(df, df_wishes)
+
   write.xlsx(df_final,"resultatfinal.xlsx")
 }
