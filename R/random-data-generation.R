@@ -45,7 +45,7 @@ wishes_generation <- function(sector) {
         ranking <- sample(mica_answer)
         result[paste0("Q04_voeuxMICA->", ranking)] <- 1:4
     }
-    return(result)
+    result
 }
 
 #' applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
