@@ -53,25 +53,31 @@ server <- function(input, output) {
 
     display_tables(input, output, df)
 
+    capacity_full_shown <- reactiveVal(FALSE)
+
+    output$capacity_full <- renderText({
+        if (capacity_full_shown()) {
+            return("La capacité d'un département est pleine : changez de méthode d'affectation.")
+        }
+    })
+
     capacities_counters_table <- reactive({
         capacities_counters_table <- capacities
 
-        observeEvent(input$assign_depart_hard_1, {
-            # todo : deduire de chaque capacité les affectations faites
-        })
-
-        observeEvent(input$assign_depart_hard_2, {
-            # same
-        })
-
-        observeEvent(input$assign_depart_hard_3, {
-            # same
-            # if une capacité <0 mettre la cellule en rouge
-            # et print un message pour indiquer qu'il n'y a plus de places dans le depart en question
-        })
+        for (i in 1:3) {
+            observeEvent(input$assign_depart_hard_i, {
+                for (dep in names(capacities)) {
+                    capacities_counters_table[dep] <- sum(assign_depart_hard(df(), i)[Aff_depart_i = dep])
+                    if (capacities_counters_table[dep] < 0) {
+                        capacity_full_shown(TRUE)
+                    }
+                }
+            })
+        }
 
         observeEvent(input$assign_depart_erase, {
             capacities_counters_table <- capacities
+            capacity_full_shown(FALSE)
         })
     })
 
