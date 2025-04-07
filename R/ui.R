@@ -40,7 +40,8 @@ ui <- page_sidebar(
             ),
             uiOutput("aff_depart"),
             card(
-                tableOutput("capacities_counters")
+                tableOutput("capacities_counters"),
+                textOutput("capacity_full")
             )
         ),
         nav_panel(
