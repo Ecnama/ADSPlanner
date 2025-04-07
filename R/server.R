@@ -66,7 +66,8 @@ server <- function(input, output) {
 
         observeEvent(input$assign_depart_hard_3, {
             # same
-            # if une capacité <0 mettre la cellule en rouge et print un message pour indiquer d'essayer un autre type d'affectation
+            # if une capacité <0 mettre la cellule en rouge
+            # et print un message pour indiquer qu'il n'y a plus de places dans le depart en question
         })
 
         observeEvent(input$assign_depart_erase, {
