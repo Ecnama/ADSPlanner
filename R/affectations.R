@@ -83,6 +83,20 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
     observeEvent(input$assign_depart_erase, {
         handle_operation(assign_depart_erase)
     })
+
+    # Session assignment
+
+    observeEvent(input$assign_session_auto, {
+        if (is.null(df())) {
+            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return()
+        }
+
+        df(assign_sessions_auto(df()))
+
+        #showNotification("Affectations de sessions effectu\u00E9es.", type = "message")
+        showNotification("Not implemented yet.", type = "warning")
+    })
 }
 
 #' Erase all affected departments
@@ -171,4 +185,8 @@ assign_depart_soft <- function(df, selection, capacities) {
     }
 
     list(df = df, fails = fails)
+}
+
+assign_sessions_auto <- function(df) {
+    df
 }

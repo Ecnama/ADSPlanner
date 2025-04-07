@@ -44,7 +44,10 @@ ui <- page_sidebar(
         ),
         nav_panel(
             "Affectations sessions",
-            "Not implemented yet.",
+            div(
+                actionButton("assign_session_auto", "Affectation automatique des sessions"),
+            ),
+            uiOutput("aff_session"),
         )
     ),
 )

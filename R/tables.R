@@ -29,6 +29,17 @@ display_tables <- function(input, output, df) {
         }
     })
 
+    output$aff_session <- renderUI({
+        if (is.null(input$file)) {
+            HTML('<div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-weight: bold;">Veuillez charger un fichier pour commencer.</div>')
+        } else {
+            c(
+                DTOutput("aff_session_table")
+                #"Cliquez sur les lignes pour les s\u00E9lectionner. Les modifications ne s'appliqueront qu'aux lignes s\u00E9lectionn\u00E9es."
+            )
+        }
+    })
+
     # Table definitions
 
     output$vis_table <- renderDT(
@@ -37,6 +48,7 @@ display_tables <- function(input, output, df) {
         },
         extensions = c("Scroller"),
         filter = "top",
+        fillContainer = TRUE,
         selection = "none",
         server = FALSE
     )
@@ -63,6 +75,41 @@ display_tables <- function(input, output, df) {
             scrollY = 320,
             scroller = TRUE
         ),
+        fillContainer = TRUE,
+        selection = "none",
+        server = FALSE
+    )
+
+    output$aff_session_table <- renderDT(
+        {
+            df_session <- df()
+            df_session[["D\u00E9partements affect\u00E9s"]] <- apply(df_session[, grepl("^Aff_depart_", names(df_session))], 1, function(x) {
+                x <- x[!is.na(x)]
+                if (length(x) == 0) {
+                    return(NA)
+                }
+                paste(x, collapse = ", ")
+            })
+            # Reorder the columns
+            names(df_session) <- sub("^Aff_session_1$", "Session 1", names(df_session))
+            names(df_session) <- sub("^Aff_session_2$", "Session 2", names(df_session))
+            names(df_session) <- sub("^Aff_session_3$", "Session 3", names(df_session))
+            df_session <- df_session[, !(grepl("^Aff", names(df_session)) | grepl("^V", names(df_session)))]
+            df_session <- df_session[, c("Nom", "Prenom", "Classement", "Filiere", "D\u00E9partements affect\u00E9s", "Session 1", "Session 2", "Session 3")]
+            df_session
+        },
+        filter = "top",
+        extensions = c("Scroller"),
+        # extensions = c("Select", "Buttons", "Scroller"),
+        # options = list(
+        #     select = list(style = "multi+shift", items = "row"),
+        #     dom = '<"top"lfB>rt<"bottom"ip><"clear">',
+        #     buttons = dt_select_deselect_buttons,
+        #     deferRender = TRUE,
+        #     scrollY = 320,
+        #     scroller = TRUE
+        # ),
+        fillContainer = TRUE,
         selection = "none",
         server = FALSE
     )
