@@ -6,6 +6,13 @@ ui <- page_sidebar(
     sidebar = sidebar(
         width = 350,
         card(
+            fileInput("file", "R\u00E9sultats du sondage", accept = c(".xlsx", ".ods"), buttonLabel = "Parcourir...", placeholder = "Aucun fichier", multiple = FALSE),
+        ),
+        card(
+            textInput("download_name", "Nom du fichier d'affectations", value = "affectations"),
+            uiOutput("download_button"),
+        ),
+        card(
             "Nombre de places par session",
             numericInput("capacity_EII", "EII", value = 0, min = 0),
             numericInput("capacity_EetT", "EetT", value = 0, min = 0),
@@ -13,15 +20,7 @@ ui <- page_sidebar(
             numericInput("capacity_MA", "MA", value = 0, min = 0),
             numericInput("capacity_GCU", "GCU", value = 0, min = 0),
             numericInput("capacity_GMA", "GMA", value = 0, min = 0),
-            numericInput("capacity_GPM", "GPM", value = 0, min = 0),
-            uiOutput("recuperation_button")
-        ),
-        card(
-            fileInput("file", "R\u00E9sultats du sondage", accept = c(".xlsx", ".ods"), buttonLabel = "Parcourir...", placeholder = "Aucun fichier", multiple = FALSE),
-        ),
-        card(
-            textInput("download_name", "Nom du fichier d'affectations", value = "affectations"),
-            uiOutput("download_button"),
+            numericInput("capacity_GPM", "GPM", value = 0, min = 0)
         ),
     ),
     navset_tab(
@@ -38,11 +37,10 @@ ui <- page_sidebar(
                 actionButton("assign_depart_hard_3", "Affectation \"dure\" voeu 3", width = 180),
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
             ),
-            uiOutput("aff_depart"),
             card(
-                tableOutput("capacities_counters"),
-                textOutput("capacity_full")
-            )
+                uiOutput(c("capacities_counters", "capacity_full"))
+            ),
+            uiOutput("aff_depart")
         ),
         nav_panel(
             "Affectations sessions",

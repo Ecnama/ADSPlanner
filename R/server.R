@@ -22,11 +22,9 @@ server <- function(input, output) {
 
     handle_affectations(input, output, df)
 
-    output$recuperation_button <- renderUI({
-        downloadButton("recuperation_capacities", paste("Valider", sep = ""))
-    })
+    capacities <- reactiveVal(NULL)
 
-    output$recuperation_capacities <- renderUI({
+    observe({
         capacities <- c(
             "EII" = input$capacity_EII * 3,
             "E&T" = input$capacity_EetT * 3,
@@ -37,6 +35,8 @@ server <- function(input, output) {
             "GPM" = input$capacity_GPM * 3
         )
     })
+
+    remaining_capacities <- reactiveVal(capacities())
 
     output$download_button <- renderUI({
         downloadButton("download", paste("T\u00E9l\u00E9charger ", input$download_name, ".xlsx", sep = ""))
@@ -56,32 +56,12 @@ server <- function(input, output) {
     capacity_full_shown <- reactiveVal(FALSE)
 
     output$capacity_full <- renderText({
-        if (capacity_full_shown()) {
+        if (any(unlist(remaining_capacities) < 0)) {
             return("La capacité d'un département est pleine : changez de méthode d'affectation.")
         }
     })
 
-    capacities_counters_table <- reactive({
-        capacities_counters_table <- capacities
-
-        for (i in 1:3) {
-            observeEvent(input$assign_depart_hard_i, {
-                for (dep in names(capacities)) {
-                    capacities_counters_table[dep] <- sum(assign_depart_hard(df(), i)[Aff_depart_i = dep])
-                    if (capacities_counters_table[dep] < 0) {
-                        capacity_full_shown(TRUE)
-                    }
-                }
-            })
-        }
-
-        observeEvent(input$assign_depart_erase, {
-            capacities_counters_table <- capacities
-            capacity_full_shown(FALSE)
-        })
-    })
-
     output$capacities_counters <- renderTable({
-        capacities_counters_table()
+        remaining_capacities()
     })
 }
