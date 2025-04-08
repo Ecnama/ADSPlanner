@@ -92,9 +92,9 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
             return()
         }
 
-        df(assign_sessions_auto(df()))
+        df(assign_sessions_auto(df(), input$aff_session_table_rows_selected))
 
-        #showNotification("Affectations de sessions effectu\u00E9es.", type = "message")
+        # showNotification("Affectations de sessions effectu\u00E9es.", type = "message")
         showNotification("Not implemented yet.", type = "warning")
     })
 }
@@ -187,6 +187,6 @@ assign_depart_soft <- function(df, selection, capacities) {
     list(df = df, fails = fails)
 }
 
-assign_sessions_auto <- function(df) {
+assign_sessions_auto <- function(df, selection) {
     df
 }

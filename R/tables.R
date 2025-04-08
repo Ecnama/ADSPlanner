@@ -99,16 +99,15 @@ display_tables <- function(input, output, df) {
             df_session
         },
         filter = "top",
-        extensions = c("Scroller"),
-        # extensions = c("Select", "Buttons", "Scroller"),
-        # options = list(
-        #     select = list(style = "multi+shift", items = "row"),
-        #     dom = '<"top"lfB>rt<"bottom"ip><"clear">',
-        #     buttons = dt_select_deselect_buttons,
-        #     deferRender = TRUE,
-        #     scrollY = 320,
-        #     scroller = TRUE
-        # ),
+        extensions = c("Select", "Buttons", "Scroller"),
+        options = list(
+            select = list(style = "multi+shift", items = "row"),
+            dom = '<"top"lfB>rt<"bottom"ip><"clear">',
+            buttons = dt_select_deselect_buttons,
+            deferRender = TRUE,
+            scrollY = 320,
+            scroller = TRUE
+        ),
         fillContainer = TRUE,
         selection = "none",
         server = FALSE
