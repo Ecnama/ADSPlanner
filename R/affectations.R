@@ -1,8 +1,7 @@
 NB_SESSIONS <- c(
     "FC_FIRE" = 3,
-    "EMIR" = 3,
-    "MICA" = 3,
-    "FISP" = 2
+    "EMIR" = 2,
+    "MICA" = 2
 )
 
 #' Function used by server to handle affectations
