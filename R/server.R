@@ -64,7 +64,7 @@ server <- function(input, output) {
     capacity_full_shown <- reactiveVal(FALSE)
 
     output$capacity_full <- renderText({
-        if (capacity_full_shown()) {
+        if (any(unlist(remaining_capacities) < 0)) {
             return("La capacité d'un département est pleine : changez de méthode d'affectation.")
         }
     })
