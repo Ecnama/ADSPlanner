@@ -81,7 +81,7 @@ assign_depart_hard <- function(df, selection, wish_number) {
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
             if (is.na(df[[paste("Aff_depart_", j, sep = "")]][i])) {
                 df[[paste("Aff_depart_", j, sep = "")]][i] <- df[[paste("V", wish_number, sep = "")]][i]
-                #print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
+                # print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
                 break()
             } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
                 break()
