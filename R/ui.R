@@ -7,13 +7,13 @@ ui <- page_sidebar(
         width = 350,
         card(
             "Nombre de places par session",
-            numericInput("capacity_EII", "EII", value = 0),
-            numericInput("capacity_EetT", "EetT", value = 0),
-            numericInput("capacity_INFO", "INFO", value = 0),
-            numericInput("capacity_MA", "MA", value = 0),
-            numericInput("capacity_GCU", "GCU", value = 0),
-            numericInput("capacity_GMA", "GMA", value = 0),
-            numericInput("capacity_GPM", "GPM", value = 0),
+            numericInput("capacity_EII", "EII", value = 0, min = 0),
+            numericInput("capacity_EetT", "EetT", value = 0, min = 0),
+            numericInput("capacity_INFO", "INFO", value = 0, min = 0),
+            numericInput("capacity_MA", "MA", value = 0, min = 0),
+            numericInput("capacity_GCU", "GCU", value = 0, min = 0),
+            numericInput("capacity_GMA", "GMA", value = 0, min = 0),
+            numericInput("capacity_GPM", "GPM", value = 0, min = 0),
             uiOutput("recuperation_button")
         ),
         card(
