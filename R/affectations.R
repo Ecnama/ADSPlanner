@@ -100,6 +100,32 @@ assign_depart_hard <- function(df, selection, wish_number) {
             fails <- c(fails, i)
         }
     }
+<<<<<<< HEAD
 
     list(df = df, fails = fails)
+=======
+    df
+>>>>>>> 96fd166 (targeted-affectation)
+}
+
+#' assign certain students to a certain departement, deleting it from a certain departement
+#'
+#' @param df The data frame with the students and their wishes
+#' @param selection The indices of students to assign
+#' @param old_depart The departement the students were assigned 
+#' @param new_depart The departement to which the students will be assigned
+#' @return The input data frame with affected departments
+targeted_affectation <- function(df, selection, old_depart, new_depart) {
+    for (i in selection) {
+        nb_sessions <- NB_SESSIONS[df$Filiere[i]]
+        for (j in 1:nb_sessions) {
+            col_name <- paste("Aff_depart_", j, sep = "")
+            if (!is.na(df[[col_name]][i]) && df[[col_name]][i] == old_depart) {
+                df[[col_name]][i] <- new_depart
+                break
+            }
+        }
+
+    }
+    return(df)
 }
