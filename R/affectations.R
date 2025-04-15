@@ -112,7 +112,7 @@ assign_depart_hard <- function(df, selection, wish_number) {
 #'
 #' @param df The data frame with the students and their wishes
 #' @param selection The indices of students to assign
-#' @param old_depart The departement the students were assigned 
+#' @param old_depart The departement the students were assigned
 #' @param new_depart The departement to which the students will be assigned
 #' @return The input data frame with affected departments
 targeted_affectation <- function(df, selection, old_depart, new_depart) {
@@ -127,5 +127,5 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
         }
 
     }
-    return(df)
+    df
 }
