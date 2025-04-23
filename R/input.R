@@ -7,27 +7,6 @@ Q2_PREFIX <- "Q02_Voeux->"
 Q3_PREFIX <- "Q03_VoeuxEMIR->"
 Q4_PREFIX <- "Q04_voeuxMICA->"
 
-#' Reads the file and selects the needed columns
-#'
-#' @param file_path The path to the file to parse
-#' @return The file as a data frame
-read_file <- function(file_path) {
-    # Check if file extension is supported (xlsx or ods)
-    if (grepl(".xlsx", file_path)) {
-        file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
-        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
-        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
-    } else if (grepl(".ods", file_path)) {
-        file_data <- readODS::read_ods(file_path, sheet = 1, col_names = TRUE, as_tibble = FALSE, na = "NULL")
-        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
-        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
-    } else {
-        stop("File type not supported")
-    }
-
-    file_data
-}
-
 #' Synthesizes a student's wishes from multiple columns per filiere to 7 columns for all filieres
 #'
 #' @param wishes The wishes columns
@@ -64,11 +43,20 @@ synthesize_wishes <- function(wishes) {
 #' @return A data frame with the cleaned data
 parse_file <- function(file_path) {
     # Get file data as a data frame
-    tryCatch({
-        file_data <- read_file(file_path)
-    }, error = function(e) {
-        stop("Error while reading the file : ", conditionMessage(e))
-    })
+    file_data <- NULL
+    sheet_names <- NULL
+
+    # Check file extension
+    if (grepl(".xlsx", file_path)) {
+        file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
+        sheet_names <- openxlsx::getSheetNames(file_path)
+    } else if (grepl(".ods", file_path)) {
+        file_data <- readODS::read_ods(file_path, sheet = 1, col_names = TRUE, as_tibble = FALSE, na = "NULL")
+        sheet_names <- readODS::list_ods_sheets(file_path)
+    } else {
+        stop("File type not supported")
+    }
+
     # Build the result data frame
     data <- data.frame(
         Nom = character(0),
@@ -89,20 +77,45 @@ parse_file <- function(file_path) {
         Aff_session_2 = character(0),
         Aff_session_3 = character(0)
     )
+
+    # Get file source
+    data_source <- NULL
+    if (sheet_names[1] == "ADSPlanner") {
+        data_source <- "ADSPlanner"
+        file_data <- file_data[, names(data)]
+    } else {
+        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
+        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
+        data_source <- "Moodle"
+    }
+
     # Process each row of the file's data
     for (i in seq_len(nrow(file_data))) {
-        # Name
-        name_split <- strsplit(file_data[i, 1], split = " ")[[1]] # We assume that the first and last name are separated by a space
-        data[i, 1] <- name_split[2]
-        data[i, 2] <- name_split[1]
-        data[i, 3] <- as.integer(file_data[i, 2])
-        # Wishes
-        tryCatch({
-            synthesized_wishes <- synthesize_wishes(file_data[i, 3:18])
-        }, error = function(e) {
-            stop("Error while synthesizing the wishes (l.", i, "): ", conditionMessage(e))
-        })
-        data[i, 4:(length(synthesized_wishes) + 3)] <- synthesized_wishes
+        # Determine the source and process accordingly
+        switch(data_source,
+            "Moodle" = {
+                # Name
+                name_split <- strsplit(file_data[i, 1], split = " ")[[1]] # We assume that the first and last name are separated by a space
+                data[i, 1] <- name_split[2]
+                data[i, 2] <- name_split[1]
+                # Rank
+                data[i, 3] <- as.integer(file_data[i, 2])
+                # Wishes
+                tryCatch(
+                    {
+                        synthesized_wishes <- synthesize_wishes(file_data[i, 3:18])
+                    },
+                    error = function(e) {
+                        stop("Error while synthesizing the wishes (l.", i, "): ", conditionMessage(e))
+                    }
+                )
+                data[i, 4:(length(synthesized_wishes) + 3)] <- synthesized_wishes
+            },
+            "ADSPlanner" = {
+                data <- file_data
+            },
+            stop("Unknown data source")
+        )
     }
 
     data
