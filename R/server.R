@@ -1,6 +1,7 @@
 library(shiny)
 
 source("R/input.R")
+source("R/output.R")
 source("R/affectations.R")
 source("R/tables.R")
 
@@ -45,7 +46,14 @@ server <- function(input, output) {
     })
 
     output$download_button <- renderUI({
-        downloadButton("download", paste("T\u00E9l\u00E9charger ", input$download_name, ".xlsx", sep = ""))
+        if (is.null(df())) {
+            tags$div(
+                style = "color: gray; text-align: center;",
+                "Aucun fichier charg\u00E9"
+            )
+        } else {
+            downloadButton("download", paste("T\u00E9l\u00E9charger ", input$download_name, ".xlsx", sep = ""))
+        }
     })
 
     output$download <- downloadHandler(
@@ -53,7 +61,7 @@ server <- function(input, output) {
             paste(input$download_name, ".xlsx", sep = "")
         },
         content = function(file) {
-            write("Not implemented yet.", file)
+            write_output(df(), file)
         }
     )
 
