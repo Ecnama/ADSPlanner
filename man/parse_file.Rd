@@ -2,7 +2,7 @@
 % Please edit documentation in R/input.R
 \name{parse_file}
 \alias{parse_file}
-\title{Parses the file to build a clean data frame}
+\title{Parses the file to build a clean data frame (main function to call)}
 \usage{
 parse_file(file_path)
 }
@@ -13,5 +13,5 @@ parse_file(file_path)
 A data frame with the cleaned data
 }
 \description{
-Parses the file to build a clean data frame
+Parses the file to build a clean data frame (main function to call)
 }

@@ -48,3 +48,5 @@ test_that("parse_file throws error for invalid data", {
     )
     expect_error(parse_file("../data/test_file.xlsx"), "Error while synthesizing the wishes \\(l\\.1\\): Unknown filière")
 })
+
+# TODO: Add tests for other failure modes and ADSPlanner import

@@ -7,6 +7,26 @@ Q2_PREFIX <- "Q02_Voeux->"
 Q3_PREFIX <- "Q03_VoeuxEMIR->"
 Q4_PREFIX <- "Q04_voeuxMICA->"
 
+DF_STRUCTURE <- data.frame(
+    Nom = character(0),
+    Prenom = character(0),
+    Classement = integer(0),
+    Filiere = character(0),
+    V1 = character(0),
+    V2 = character(0),
+    V3 = character(0),
+    V4 = character(0),
+    V5 = character(0),
+    V6 = character(0),
+    V7 = character(0),
+    Aff_depart_1 = character(0), # Affected departments (order doesn't matter)
+    Aff_depart_2 = character(0),
+    Aff_depart_3 = character(0),
+    Aff_session_1 = character(0), # Three columns for final affectations of all the sessions
+    Aff_session_2 = character(0),
+    Aff_session_3 = character(0)
+)
+
 #' Synthesizes a student's wishes from multiple columns per filiere to 7 columns for all filieres
 #'
 #' @param wishes The wishes columns
@@ -37,16 +57,18 @@ synthesize_wishes <- function(wishes) {
     result
 }
 
-#' Parses the file to build a clean data frame
+#' Extracts raw data from the provided file path (.xlsx or .ods)
 #'
-#' @param file_path The path to the file to parse
-#' @return A data frame with the cleaned data
-parse_file <- function(file_path) {
-    # Get file data as a data frame
+#' @param file_path The path to the file to extract data from
+#' @return A list containing the file data and the sheet names
+read_file <- function(file_path) {
+    if (!file.exists(file_path)) {
+        stop("File does not exist")
+    }
+
     file_data <- NULL
     sheet_names <- NULL
 
-    # Check file extension
     if (grepl(".xlsx", file_path)) {
         file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
         sheet_names <- openxlsx::getSheetNames(file_path)
@@ -57,41 +79,18 @@ parse_file <- function(file_path) {
         stop("File type not supported")
     }
 
-    # Build the result data frame
-    data <- data.frame(
-        Nom = character(0),
-        Prenom = character(0),
-        Classement = integer(0),
-        Filiere = character(0),
-        V1 = character(0),
-        V2 = character(0),
-        V3 = character(0),
-        V4 = character(0),
-        V5 = character(0),
-        V6 = character(0),
-        V7 = character(0),
-        Aff_depart_1 = character(0), # Affected departments (order doesn't matter)
-        Aff_depart_2 = character(0),
-        Aff_depart_3 = character(0),
-        Aff_session_1 = character(0), # Three columns for final affectations of all the sessions
-        Aff_session_2 = character(0),
-        Aff_session_3 = character(0)
-    )
+    list("file_data" = file_data, "sheet_names" = sheet_names)
+}
 
-    # Get file source
-    data_source <- NULL
-    if (sheet_names[1] == "ADSPlanner") {
-        data_source <- "ADSPlanner"
-        file_data <- file_data[, names(data)]
-    } else {
-        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
-        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
-        data_source <- "Moodle"
-    }
+#' Processes the file data to match our data structure
+#'
+#' @param file_data Raw data from the file
+#' @param data_source The string of the data source (Moodle or ADSPlanner)
+#' @return The final data frame
+process_data <- function(file_data, data_source) {
+    data <- DF_STRUCTURE
 
-    # Process each row of the file's data
     for (i in seq_len(nrow(file_data))) {
-        # Determine the source and process accordingly
         switch(data_source,
             "Moodle" = {
                 # Name
@@ -119,4 +118,34 @@ parse_file <- function(file_path) {
     }
 
     data
+}
+
+#' Parses the file to build a clean data frame (main function to call)
+#'
+#' @param file_path The path to the file to parse
+#' @return A data frame with the cleaned data
+parse_file <- function(file_path) {
+    read_return <- read_file(file_path)
+    file_data <- read_return$file_data
+    sheet_names <- read_return$sheet_names
+
+    data_source <- NULL
+    if (sheet_names[1] == "ADSPlanner") {
+        diff <- setdiff(names(DF_STRUCTURE), names(file_data))
+        if (length(diff) > 0) {
+            stop("File parsing error, missing columns: ", paste(diff, collapse = ", "))
+        }
+        data_source <- "ADSPlanner"
+        file_data <- file_data[, names(DF_STRUCTURE)]
+    } else {
+        needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
+        diff <- setdiff(needed_columns, names(file_data))
+        if (length(diff) > 0) {
+            stop("File parsing error, missing columns: ", paste(diff, collapse = ", "), "\nAre you sure this is a Moodle file?")
+        }
+        data_source <- "Moodle"
+        file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
+    }
+
+    process_data(file_data, data_source)
 }
