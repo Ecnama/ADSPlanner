@@ -10,9 +10,21 @@ NB_SESSIONS <- c(
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
 handle_affectations <- function(input, output, df) {
-    try_affectation <- function(number) {
+    common_checks <- function() {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return(FALSE)
+        }
+
+        if (is.null(input$aff_depart_table_rows_selected)) {
+            showNotification("Aucune ligne s\u00E9lectionn\u00E9e.", type = "warning")
+            return(FALSE)
+        }
+        TRUE
+    }
+
+    try_affectation <- function(number) {
+        if (!common_checks()) {
             return()
         }
 
@@ -28,8 +40,7 @@ handle_affectations <- function(input, output, df) {
     observeEvent(input$assign_depart_hard_3, try_affectation(3))
 
     observeEvent(input$assign_depart_real, {
-        if (is.null(df())) {
-            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+        if (!common_checks()) {
             return()
         }
 
@@ -37,8 +48,7 @@ handle_affectations <- function(input, output, df) {
     })
 
     observeEvent(input$assign_depart_erase, {
-        if (is.null(df())) {
-            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+        if (!common_checks()) {
             return()
         }
 
