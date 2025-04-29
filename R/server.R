@@ -38,6 +38,8 @@ server <- function(input, output) {
 
     remaining_capacities <- reactiveVal(capacities())
 
+    handle_capacities(df, capacities, remaining_capacities)
+
     output$download_button <- renderUI({
         downloadButton("download", paste("T\u00E9l\u00E9charger ", input$download_name, ".xlsx", sep = ""))
     })
