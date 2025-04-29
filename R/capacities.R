@@ -10,9 +10,7 @@ handle_capacities <- function(df, capacities, remaining_capacities) {
             remaining_capacities(calculate_new_capacities(updated_df, capacities))
         }
     })
-    # gerer l'affichage renderTable
 }
-
 
 
 #' Calculate the new capacities avec each changes of the df
@@ -22,9 +20,9 @@ handle_capacities <- function(df, capacities, remaining_capacities) {
 calculate_new_capacities <- function(df, capacities) {
     result <- capacities
     for (dep in names(capacities)) {
-        nb_students_affected <- sum(df[Aff_depart_1 == dep], na.rm = TRUE)
-        + sum(df[Aff_depart_2 == dep], na.rm = TRUE)
-        + sum(df[Aff_depart_3 == dep], na.rm = TRUE)
+        nb_students_affected <- sum(df$Aff_depart_1 == dep, na.rm = TRUE) +
+            sum(df$Aff_depart_2 == dep, na.rm = TRUE) +
+            sum(df$Aff_depart_3 == dep, na.rm = TRUE)
         result[dep] <- capacities[dep] - nb_students_affected
     }
     result

@@ -14,13 +14,13 @@ ui <- page_sidebar(
         ),
         card(
             "Nombre de places par session",
-            numericInput("capacity_EII", "EII", value = 0, min = 0),
-            numericInput("capacity_EetT", "EetT", value = 0, min = 0),
-            numericInput("capacity_INFO", "INFO", value = 0, min = 0),
-            numericInput("capacity_MA", "MA", value = 0, min = 0),
-            numericInput("capacity_GCU", "GCU", value = 0, min = 0),
-            numericInput("capacity_GMA", "GMA", value = 0, min = 0),
-            numericInput("capacity_GPM", "GPM", value = 0, min = 0)
+            numericInput("capacity_EII", "EII", value = 3, min = 0),
+            numericInput("capacity_EetT", "E&T", value = 3, min = 0),
+            numericInput("capacity_INFO", "INFO", value = 3, min = 0),
+            numericInput("capacity_MA", "MA", value = 3, min = 0),
+            numericInput("capacity_GCU", "GCU", value = 3, min = 0),
+            numericInput("capacity_GMA", "GMA", value = 3, min = 0),
+            numericInput("capacity_GPM", "GPM", value = 3, min = 0)
         ),
     ),
     navset_tab(
@@ -38,7 +38,8 @@ ui <- page_sidebar(
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
             ),
             card(
-                uiOutput(c("capacities_counters", "capacity_full"))
+                uiOutput("capacities_counters"),
+                textOutput("capacity_full")
             ),
             uiOutput("aff_depart")
         ),
