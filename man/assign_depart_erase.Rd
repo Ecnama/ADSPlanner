@@ -11,6 +11,9 @@ assign_depart_erase(df, selection)
 
 \item{selection}{The indices of students to erase}
 }
+\value{
+A list with (list: The input data frame with erased departments, fails: An empty vector because this can never fail)
+}
 \description{
 Erase all affected departments
 }

@@ -23,14 +23,26 @@ handle_affectations <- function(input, output, df) {
         TRUE
     }
 
-    try_affectation <- function(number) {
+    handle_operation <- function(operation) {
         if (!common_checks()) {
             return()
         }
 
-        df(assign_depart_hard(df(), input$aff_depart_table_rows_selected, number))
+        r <- operation(df(), input$aff_depart_table_rows_selected)
+        df(r$df)
 
-        showNotification(paste("D\u00E9partements des voeux ", number, " affect\u00E9s."), type = "message")
+        if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
+            showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
+        } else if (length(r$fails) > 0) {
+            showNotification(paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
+                                   paste(paste(df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "), collapse = ", "), ".", sep = ""), type = "warning")
+        } else {
+            showNotification("Op\u00E9ration r\u00E9alis\u00E9e.", type = "message")
+        }
+    }
+
+    try_affectation <- function(number) {
+        handle_operation(function(df, selection) assign_depart_hard(df, selection, number))
     }
 
     observeEvent(input$assign_depart_hard_1, try_affectation(1))
@@ -40,21 +52,11 @@ handle_affectations <- function(input, output, df) {
     observeEvent(input$assign_depart_hard_3, try_affectation(3))
 
     observeEvent(input$assign_depart_real, {
-        if (!common_checks()) {
-            return()
-        }
-
         showNotification("Not implemented yet.", type = "warning")
     })
 
     observeEvent(input$assign_depart_erase, {
-        if (!common_checks()) {
-            return()
-        }
-
-        df(assign_depart_erase(df(), input$aff_depart_table_rows_selected))
-
-        showNotification("Affectations de d\u00E9partements effac\u00E9es.", type = "message")
+        handle_operation(assign_depart_erase)
     })
 }
 
@@ -62,11 +64,13 @@ handle_affectations <- function(input, output, df) {
 #'
 #' @param df The data frame with the students and their wishes
 #' @param selection The indices of students to erase
+#' @return A list with (list: The input data frame with erased departments, fails: An empty vector because this can never fail)
 assign_depart_erase <- function(df, selection) {
     df[selection, ]$Aff_depart_1 <- NA_character_
     df[selection, ]$Aff_depart_2 <- NA_character_
     df[selection, ]$Aff_depart_3 <- NA_character_
-    df
+
+    list(df = df, fails = c())
 }
 
 #' Assign departments to students according to their wishes, regardless of the number of places
@@ -74,8 +78,10 @@ assign_depart_erase <- function(df, selection) {
 #' @param df The data frame with the students and their wishes
 #' @param selection The indices of students to assign
 #' @param wish_number The number of the wish to assign
-#' @return The input data frame with affected departments
+#' @return A list with (list: The input data frame with affected departments, fails: The indices of students that could not be assigned)
 assign_depart_hard <- function(df, selection, wish_number) {
+    fails <- c()
+
     for (i in selection) {
         j <- 1
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
@@ -84,12 +90,16 @@ assign_depart_hard <- function(df, selection, wish_number) {
                 #print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
                 break()
             } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
+                fails <- c(fails, i)
                 break()
             } else {
                 j <- j + 1
             }
         }
+        if (j > NB_SESSIONS[df$Filiere[i]]) {
+            fails <- c(fails, i)
+        }
     }
 
-    df
+    list(df = df, fails = fails)
 }
