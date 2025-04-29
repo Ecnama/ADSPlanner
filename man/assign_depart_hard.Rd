@@ -14,7 +14,7 @@ assign_depart_hard(df, selection, wish_number)
 \item{wish_number}{The number of the wish to assign}
 }
 \value{
-The input data frame with affected departments
+A list with (list: The input data frame with affected departments, fails: The indices of students that could not be assigned)
 }
 \description{
 Assign departments to students according to their wishes, regardless of the number of places
