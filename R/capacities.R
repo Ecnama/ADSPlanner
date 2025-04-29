@@ -13,8 +13,6 @@ handle_capacities <- function(df, capacities, remaining_capacities) {
 }
 
 
-
-
 #' Calculate the new capacities avec each changes of the df
 #'
 #' @param df The reactive data frame of students's wishes and affectations
@@ -22,6 +20,7 @@ handle_capacities <- function(df, capacities, remaining_capacities) {
 calculate_new_capacities <- function(df, capacities) {
     result <- capacities
     for (dep in names(capacities)) {
+
         nb_students_affected <- sum(df$Aff_depart_1 == dep, na.rm = TRUE) +
             sum(df$Aff_depart_2 == dep, na.rm = TRUE) +
             sum(df$Aff_depart_3 == dep, na.rm = TRUE)
