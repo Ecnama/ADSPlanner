@@ -23,6 +23,23 @@ handle_affectations <- function(input, output, df) {
         TRUE
     }
 
+    wish_input <- reactiveVal(1)
+
+    observeEvent(input$assign_depart_hard, {
+        if (!common_checks()) {
+            return()
+        }
+
+        showModal(modalDialog(
+            title = "Affectation dure",
+            numericInput("wish_selection", "Num\u00E9ro de voeu", value = wish_input(), min = 1, max = 7),
+            footer = tagList(
+                modalButton("Annuler"),
+                actionButton("confirm_assign_depart_hard", "Confirmer")
+            )
+        ))
+    })
+
     handle_operation <- function(operation) {
         if (!common_checks()) {
             return()
@@ -45,11 +62,12 @@ handle_affectations <- function(input, output, df) {
         handle_operation(function(df, selection) assign_depart_hard(df, selection, number))
     }
 
-    observeEvent(input$assign_depart_hard_1, try_affectation(1))
+    observeEvent(input$confirm_assign_depart_hard, {
+        wish_input(input$wish_selection)
+        removeModal()
 
-    observeEvent(input$assign_depart_hard_2, try_affectation(2))
-
-    observeEvent(input$assign_depart_hard_3, try_affectation(3))
+        try_affectation(wish_input())
+    })
 
     observeEvent(input$assign_depart_real, {
         showNotification("Not implemented yet.", type = "warning")
@@ -82,7 +100,15 @@ assign_depart_erase <- function(df, selection) {
 assign_depart_hard <- function(df, selection, wish_number) {
     fails <- c()
 
+    warned <- FALSE
     for (i in selection) {
+        if (is.na(df[[paste("V", wish_number, sep = "")]][i])) {
+            if (!warned) {
+                showNotification(paste("Certains \u00E9tudiants n'ont pas de voeu ", wish_number, ".", sep = ""), type = "warning")
+                warned <- TRUE
+            }
+            next()
+        }
         j <- 1
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
             if (is.na(df[[paste("Aff_depart_", j, sep = "")]][i])) {
