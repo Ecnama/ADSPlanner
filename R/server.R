@@ -40,6 +40,7 @@ server <- function(input, output) {
                 "GPM" = input$capacity_GPM * 3
             ))
             remaining_capacities(capacities())
+            remaining_capacities(calculate_new_capacities(df(), capacities()))
         }
     })
 
