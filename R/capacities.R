@@ -12,7 +12,6 @@ handle_capacities <- function(df, capacities, remaining_capacities) {
     })
 }
 
-
 #' Calculate the new capacities avec each changes of the df
 #'
 #' @param df The reactive data frame of students's wishes and affectations
