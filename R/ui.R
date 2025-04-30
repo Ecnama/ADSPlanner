@@ -6,6 +6,17 @@ ui <- page_sidebar(
     sidebar = sidebar(
         width = 350,
         card(
+            "Nombre de places par session",
+            numericInput("capacity_EII","EII"),
+            numericInput("capacity_EetT","EetT"),
+            numericInput("capacity_INFO","INFO"),
+            numericInput("capacity_MA","MA"),
+            numericInput("capacity_GCU","GCU"),
+            numericInput("capacity_GMA","GMA"),
+            numericInput("capacity_GPM","GPM"),
+            uiOutput("recuperation_button")
+        ),
+        card(
             fileInput("file", "R\u00E9sultats du sondage", accept = c(".xlsx", ".ods"), buttonLabel = "Parcourir...", placeholder = "Aucun fichier", multiple = FALSE),
         ),
         card(
