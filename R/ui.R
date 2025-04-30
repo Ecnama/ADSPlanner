@@ -38,6 +38,7 @@ ui <- page_sidebar(
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
             ),
             card(
+                "Capacit\u00E9s restantes",
                 uiOutput("capacities_counters"),
                 textOutput("capacity_full")
             ),

@@ -81,31 +81,28 @@ server <- function(input, output) {
             Department = names(remaining),
             Capacity = as.numeric(remaining)
         )
-        # Générer un tableau HTML avec des styles conditionnels
+        # Générer un tableau HTML transposé
         html <- tags$table(
             style = "width: 30%; border-collapse: collapse; float: right; table-layout: fixed;",
             tags$thead(
                 tags$tr(
-                    tags$th("Départements", style = "border: 1px solid black; padding: 5px;"),
-                    tags$th("Capacités restantes", style = "border: 1px solid black; padding: 5px;")
+                    lapply(capacities_df$Department, function(department) {
+                        tags$th(department, style = "border: 1px solid black; padding: 5px; text-align: center;")
+                    })
                 )
             ),
             tags$tbody(
-                lapply(seq_len(nrow(capacities_df)), function(i) {
-                    tags$tr(
+                tags$tr(
+                    lapply(capacities_df$Capacity, function(capacity) {
                         tags$td(
-                            capacities_df$Department[i],
-                            style = "border: 1px solid black; padding: 5px; width: 50%;"
-                        ),
-                        tags$td(
-                            capacities_df$Capacity[i],
+                            capacity,
                             style = paste0(
-                                "border: 1px solid black; padding: 5px; width: 50%;",
-                                if (capacities_df$Capacity[i] < 0) "color: red; font-weight: bold;" else ""
+                                "border: 1px solid black; padding: 5px; text-align: center;",
+                                if (capacity < 0) "color: red; font-weight: bold;" else ""
                             )
                         )
-                    )
-                })
+                    })
+                )
             )
         )
         # Retourner le tableau HTML
