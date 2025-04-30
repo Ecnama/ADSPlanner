@@ -63,7 +63,7 @@ server <- function(input, output) {
             return("")
         }
         if (any(as.numeric(remaining_capacities()) < 0)) {
-            return("La capacité d'un département est dépassée : changez de méthode d'affectation.")
+            return("La capacit\u00E9 d'un d\u00E9partement est d\u00E9pass\u00E9e : changez de m\u00E9thode d'affectation.")
         } else {
             return("")
         }
