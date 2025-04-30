@@ -50,23 +50,29 @@ handle_affectations <- function(input, output, df) {
 
         if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
             showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
+        } else if (length(r$fails) > 5) {
+            showNotification(paste("Op\u00E9ration impossible pour", length(r$fails), "\u00E9l\u00E9ments "), type = "warning")
         } else if (length(r$fails) > 0) {
-            showNotification(paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
-                                   paste(paste(df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "), collapse = ", "), ".", sep = ""), type = "warning")
+            showNotification(
+                paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
+                    paste(
+                          paste(
+                                df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "),
+                          collapse = ", "), ".",
+                    sep = ""
+                ),
+                type = "warning"
+            )
         } else {
             showNotification("Op\u00E9ration r\u00E9alis\u00E9e.", type = "message")
         }
-    }
-
-    try_affectation <- function(number) {
-        handle_operation(function(df, selection) assign_depart_hard(df, selection, number))
     }
 
     observeEvent(input$confirm_assign_depart_hard, {
         wish_input(input$wish_selection)
         removeModal()
 
-        try_affectation(wish_input())
+        handle_operation(function(df, selection) assign_depart_hard(df, selection, wish_input()))
     })
 
     observeEvent(input$assign_depart_real, {
@@ -100,13 +106,9 @@ assign_depart_erase <- function(df, selection) {
 assign_depart_hard <- function(df, selection, wish_number) {
     fails <- c()
 
-    warned <- FALSE
     for (i in selection) {
         if (is.na(df[[paste("V", wish_number, sep = "")]][i])) {
-            if (!warned) {
-                showNotification(paste("Certains \u00E9tudiants n'ont pas de voeu ", wish_number, ".", sep = ""), type = "warning")
-                warned <- TRUE
-            }
+            fails <- c(fails, i)
             next()
         }
         j <- 1
