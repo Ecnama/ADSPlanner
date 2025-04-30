@@ -83,7 +83,7 @@ server <- function(input, output) {
         )
         # Générer un tableau HTML transposé
         html <- tags$table(
-            style = "width: 30%; border-collapse: collapse; float: right; table-layout: fixed;",
+            style = "width: 40%; border-collapse: collapse; float: right; table-layout: fixed;",
             tags$thead(
                 tags$tr(
                     lapply(capacities_df$Department, function(department) {
