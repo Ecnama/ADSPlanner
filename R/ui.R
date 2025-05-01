@@ -12,6 +12,16 @@ ui <- page_sidebar(
             textInput("download_name", "Nom du fichier d'affectations", value = "affectations"),
             uiOutput("download_button"),
         ),
+        card(
+            "Nombre de places par session",
+            numericInput("capacity_EII", "EII", value = 3, min = 0),
+            numericInput("capacity_EetT", "E&T", value = 3, min = 0),
+            numericInput("capacity_INFO", "INFO", value = 3, min = 0),
+            numericInput("capacity_MA", "MA", value = 3, min = 0),
+            numericInput("capacity_GCU", "GCU", value = 3, min = 0),
+            numericInput("capacity_GMA", "GMA", value = 3, min = 0),
+            numericInput("capacity_GPM", "GPM", value = 3, min = 0)
+        ),
     ),
     navset_tab(
         nav_panel(
@@ -25,7 +35,12 @@ ui <- page_sidebar(
                 actionButton("assign_depart_hard", "Affectation \"dure\"", width = 180),
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
             ),
-            uiOutput("aff_depart"),
+            card(
+                "Capacit\u00E9s restantes",
+                uiOutput("capacities_counters"),
+                textOutput("capacity_full")
+            ),
+            uiOutput("aff_depart")
         ),
         nav_panel(
             "Affectations sessions",
