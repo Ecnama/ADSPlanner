@@ -118,7 +118,6 @@ assign_depart_hard <- function(df, selection, wish_number) {
                 # print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
                 break()
             } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
-                fails <- c(fails, i)
                 break()
             } else {
                 j <- j + 1
