@@ -129,3 +129,4 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
     }
     df
 }
+

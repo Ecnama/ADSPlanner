@@ -5,7 +5,7 @@ source("R/server.R")
 
 #' Run the Shiny application
 #'
-#' This function launches the Shiny application.
+#' This function launches the Shiny application.r
 #'
 #' @export
 run <- function() {
