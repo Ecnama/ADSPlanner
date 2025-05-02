@@ -14,13 +14,13 @@ ui <- page_sidebar(
         ),
         card(
             "Nombre de places par session",
-            numericInput("capacity_EII", "EII", value = 3, min = 0),
-            numericInput("capacity_EetT", "E&T", value = 3, min = 0),
-            numericInput("capacity_INFO", "INFO", value = 3, min = 0),
-            numericInput("capacity_MA", "MA", value = 3, min = 0),
-            numericInput("capacity_GCU", "GCU", value = 3, min = 0),
-            numericInput("capacity_GMA", "GMA", value = 3, min = 0),
-            numericInput("capacity_GPM", "GPM", value = 3, min = 0)
+            numericInput("capacity_EII", "EII", value = 30, min = 0),
+            numericInput("capacity_ET", "E&T", value = 30, min = 0),
+            numericInput("capacity_INFO", "INFO", value = 30, min = 0),
+            numericInput("capacity_MA", "MA", value = 30, min = 0),
+            numericInput("capacity_GCU", "GCU", value = 30, min = 0),
+            numericInput("capacity_GMA", "GMA", value = 30, min = 0),
+            numericInput("capacity_GPM", "GPM", value = 30, min = 0)
         ),
     ),
     navset_tab(

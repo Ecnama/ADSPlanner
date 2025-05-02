@@ -19,7 +19,7 @@ DF_STRUCTURE <- data.frame(
     V5 = character(0),
     V6 = character(0),
     V7 = character(0),
-    Aff_depart_1 = character(0), # Affected departments (order doesn't matter)
+    Aff_depart_1 = character(0), # Assigned departments (order doesn't matter)
     Aff_depart_2 = character(0),
     Aff_depart_3 = character(0),
     Aff_session_1 = character(0), # Three columns for final affectations of all the sessions
@@ -60,8 +60,9 @@ synthesize_wishes <- function(wishes) {
 #' Extracts raw data from the provided file path (.xlsx or .ods)
 #'
 #' @param file_path The path to the file to extract data from
+#' @param sheet The sheet number to read from
 #' @return A list containing the file data and the sheet names
-read_file <- function(file_path) {
+read_file <- function(file_path, sheet) {
     if (!file.exists(file_path)) {
         stop("File does not exist")
     }
@@ -70,10 +71,10 @@ read_file <- function(file_path) {
     sheet_names <- NULL
 
     if (grepl(".xlsx", file_path)) {
-        file_data <- openxlsx::read.xlsx(file_path, sheet = 1, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
+        file_data <- openxlsx::read.xlsx(file_path, sheet = sheet, skipEmptyRows = FALSE, skipEmptyCols = FALSE, colNames = TRUE, sep.names = " ")
         sheet_names <- openxlsx::getSheetNames(file_path)
     } else if (grepl(".ods", file_path)) {
-        file_data <- readODS::read_ods(file_path, sheet = 1, col_names = TRUE, as_tibble = FALSE, na = "NULL")
+        file_data <- readODS::read_ods(file_path, sheet = sheet, col_names = TRUE, as_tibble = FALSE, na = "NULL")
         sheet_names <- readODS::list_ods_sheets(file_path)
     } else {
         stop("File type not supported")
@@ -123,29 +124,38 @@ process_data <- function(file_data, data_source) {
 #' Parses the file to build a clean data frame (main function to call)
 #'
 #' @param file_path The path to the file to parse
-#' @return A data frame with the cleaned data
+#' @return A list containing the data frame and the capacities if they exist in the input file
 parse_file <- function(file_path) {
-    read_return <- read_file(file_path)
+    read_return <- read_file(file_path, 1)
     file_data <- read_return$file_data
     sheet_names <- read_return$sheet_names
 
     data_source <- NULL
-    if (sheet_names[1] == "ADSPlanner") {
+    capacities <- NULL
+
+    if (grepl("ADSPlanner", sheet_names[1])) {
+        read <- read_file(file_path, 2)$file_data
+        capacities <- data.frame(t(read$Capacites))
+        colnames(capacities) <- gsub("&", "", read$Departements)
+
         diff <- setdiff(names(DF_STRUCTURE), names(file_data))
         if (length(diff) > 0) {
             stop("File parsing error, missing columns: ", paste(diff, collapse = ", "))
         }
+
         data_source <- "ADSPlanner"
         file_data <- file_data[, names(DF_STRUCTURE)]
     } else {
         needed_columns <- grep(sprintf("%s|%s|%s|%s", Q1_PREFIX, Q2_PREFIX, Q3_PREFIX, Q4_PREFIX), colnames(file_data), value = TRUE)
+
         diff <- setdiff(needed_columns, names(file_data))
         if (length(diff) > 0) {
             stop("File parsing error, missing columns: ", paste(diff, collapse = ", "), "\nAre you sure this is a Moodle file?")
         }
+
         data_source <- "Moodle"
         file_data <- file_data[, c("Nom complet", "Classement", needed_columns)]
     }
 
-    process_data(file_data, data_source)
+    list("df" = process_data(file_data, data_source), "capacities" = capacities)
 }

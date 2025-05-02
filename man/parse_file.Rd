@@ -10,7 +10,7 @@ parse_file(file_path)
 \item{file_path}{The path to the file to parse}
 }
 \value{
-A data frame with the cleaned data
+A list containing the data frame and the capacities if they exist in the input file
 }
 \description{
 Parses the file to build a clean data frame (main function to call)

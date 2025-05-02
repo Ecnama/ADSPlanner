@@ -4,10 +4,12 @@
 \alias{write_output}
 \title{Output data to an Excel file}
 \usage{
-write_output(df, file)
+write_output(df, capacities, file)
 }
 \arguments{
 \item{df}{The data frame to write}
+
+\item{capacities}{The capacities of each department}
 
 \item{file}{The path to the file to write}
 }

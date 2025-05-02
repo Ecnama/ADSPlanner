@@ -29,7 +29,7 @@ test_that("synthesize_wishes throws error for non existing filière", {
 
 test_that("parse_file returns correct result for a valid input file", {
     result <- parse_file("../data/test_file.xlsx")
-    expect_equal(result, parse_file_output)
+    expect_equal(result$df, parse_file_output)
 })
 
 test_that("parse_file throws error for unsupported file types", {

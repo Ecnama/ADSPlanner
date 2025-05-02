@@ -4,10 +4,12 @@
 \alias{read_file}
 \title{Extracts raw data from the provided file path (.xlsx or .ods)}
 \usage{
-read_file(file_path)
+read_file(file_path, sheet)
 }
 \arguments{
 \item{file_path}{The path to the file to extract data from}
+
+\item{sheet}{The sheet number to read from}
 }
 \value{
 A list containing the file data and the sheet names

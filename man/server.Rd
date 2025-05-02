@@ -4,12 +4,14 @@
 \alias{server}
 \title{Backend server logic}
 \usage{
-server(input, output)
+server(input, output, session)
 }
 \arguments{
 \item{input}{Input data from the frontend}
 
 \item{output}{Output data the frontend will receive}
+
+\item{session}{The Shiny session object}
 }
 \description{
 Backend server logic
