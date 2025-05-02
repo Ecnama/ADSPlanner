@@ -2,16 +2,18 @@
 % Please edit documentation in R/input.R
 \name{read_file}
 \alias{read_file}
-\title{Reads the file and selects the needed columns}
+\title{Extracts raw data from the provided file path (.xlsx or .ods)}
 \usage{
-read_file(file_path)
+read_file(file_path, sheet)
 }
 \arguments{
-\item{file_path}{The path to the file to parse}
+\item{file_path}{The path to the file to extract data from}
+
+\item{sheet}{The sheet number to read from}
 }
 \value{
-The file as a data frame
+A list containing the file data and the sheet names
 }
 \description{
-Reads the file and selects the needed columns
+Extracts raw data from the provided file path (.xlsx or .ods)
 }
