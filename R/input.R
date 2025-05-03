@@ -135,7 +135,7 @@ parse_file <- function(file_path) {
 
     if (grepl("ADSPlanner", sheet_names[1])) {
         read <- read_file(file_path, 2)$file_data
-        capacities <- data.frame(t(read$Capacites))
+        capacities <- data.frame(t(read$Capacite))
         colnames(capacities) <- gsub("&", "", read$Departements)
 
         diff <- setdiff(names(DF_STRUCTURE), names(file_data))
