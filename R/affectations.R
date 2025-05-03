@@ -9,7 +9,8 @@ NB_SESSIONS <- c(
 #' @param input Input data from the frontend
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
-handle_affectations <- function(input, output, df) {
+#' @param remaining_capacities The remaining capacities of the departments
+handle_affectations <- function(input, output, df, remaining_capacities) {
     common_checks <- function() {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
@@ -76,7 +77,7 @@ handle_affectations <- function(input, output, df) {
     })
 
     observeEvent(input$assign_depart_real, {
-        showNotification("Not implemented yet.", type = "warning")
+        handle_operation(function(df, selection) assign_depart_soft(df, selection, remaining_capacities()))
     })
 
     observeEvent(input$assign_depart_erase, {
@@ -125,6 +126,45 @@ assign_depart_hard <- function(df, selection, wish_number) {
         }
         if (j > NB_SESSIONS[df$Filiere[i]]) {
             fails <- c(fails, i)
+        }
+    }
+
+    list(df = df, fails = fails)
+}
+
+#' Assign departments to students according to their wishes, looking for the first wish that is not full
+#'
+#' @param df The data frame with the students and their wishes
+#' @param selection The indices of students to assign
+#' @param capacities The remaining capacities of the departments
+#' @return A list with (list: The input data frame with affected departments, fails: The indices of students that could not be assigned)
+assign_depart_soft <- function(df, selection, capacities) {
+    fails <- c()
+
+    for (student in selection) {
+        assignments <- 0
+        for (session in seq_len(NB_SESSIONS[df$Filiere[student]])) {
+            if (!is.na(df[[paste("Aff_depart_", session, sep = "")]][student])) {
+                next()
+            }
+            for (wish_number in 1:7) {
+                wish <- df[[paste("V", wish_number, sep = "")]][student]
+                if (is.na(wish)) {
+                    break()
+                }
+                if (capacities[wish] > 0 &&
+                        (is.na(df$Aff_depart_1[student]) || wish != df$Aff_depart_1[student]) &&
+                        (is.na(df$Aff_depart_2[student]) || wish != df$Aff_depart_2[student]) &&
+                        (is.na(df$Aff_depart_3[student]) || wish != df$Aff_depart_3[student])) {
+                    df[[paste("Aff_depart_", session, sep = "")]][student] <- wish
+                    capacities[wish] <- capacities[wish] - 1
+                    assignments <- assignments + 1
+                    break()
+                }
+            }
+        }
+        if (assignments != NB_SESSIONS[df$Filiere[student]]) {
+            fails <- c(fails, student)
         }
     }
 
