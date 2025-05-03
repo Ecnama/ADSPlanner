@@ -32,6 +32,10 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
         if (is.null(remaining_capacities()) || length(remaining_capacities()) == 0) {
             return("")
         }
+        if (any(is.na(remaining_capacities()))) {
+            print(remaining_capacities())
+            return("Les capacités contiennent des valeurs manquantes.")
+        }
         if (any(as.numeric(remaining_capacities()) < 0)) {
             return("La capacit\u00E9 d'un d\u00E9partement est d\u00E9pass\u00E9e : changez de m\u00E9thode d'affectation.")
         } else {
@@ -43,7 +47,8 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
         # Récupérer les capacités restantes
         remaining <- remaining_capacities()
         # Vérifier si les capacités sont valides
-        if (is.null(remaining) || length(remaining) == 0) {
+        if (is.null(remaining) || length(remaining) == 0 || any(is.na(remaining))) {
+            print(remaining)
             return(NULL)
         }
         # Créer un data frame pour les départements et leurs capacités
