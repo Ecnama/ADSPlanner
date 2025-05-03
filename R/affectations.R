@@ -199,6 +199,8 @@ assign_depart_soft <- function(df, selection, capacities) {
 #' @param capacities The total capacities of the departments over 3 sessions
 #' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
 assign_session_auto <- function(df, selection, capacities) {
+    capacities <- capacities / 3
+
     nb_in_session <- vector("list", max(NB_SESSIONS))
 
     fails <- c()
@@ -217,19 +219,20 @@ assign_session_auto <- function(df, selection, capacities) {
         for (perm in perms) {
             works <- TRUE
             for (j in 1:n_sessions) {
-                if (perm[j] %in% seq_along(nb_in_session[[j + sessions_offset]])) {
+                if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
                     if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
                         works <- FALSE
                         break
                     }
                 }
             }
+
             if (works) {
                 for (j in 1:n_sessions) {
                     df[[paste0("Aff_session_", j + sessions_offset)]][i] <- perm[j]
 
                     # Update the department counter properly
-                    if (perm[j] %in% seq_along(nb_in_session[[j + sessions_offset]])) {
+                    if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
                         nb_in_session[[j + sessions_offset]][perm[j]] <- nb_in_session[[j + sessions_offset]][perm[j]] + 1
                     } else {
                         nb_in_session[[j + sessions_offset]][perm[j]] <- 1
@@ -238,6 +241,7 @@ assign_session_auto <- function(df, selection, capacities) {
                 break
             }
         }
+
         # If the last permutation was a failure, none of them must have worked
         if (!works) { # TODO: improve this by backtracking or something, this should ideally never happen
             fails <- c(fails, i)

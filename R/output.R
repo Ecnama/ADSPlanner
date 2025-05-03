@@ -9,7 +9,7 @@ write_output <- function(df, capacities, file) {
     wb <- openxlsx::createWorkbook()
 
     openxlsx::addWorksheet(wb, "ADSPlanner_affectations")
-    openxlsx::addStyle(wb, "ADSPlanner_affectations", cols = 15:17, rows = 1:(nrow(df)), style = openxlsx::createStyle(textDecoration = "bold"), gridExpand = TRUE) # nolint: seq_linter.
+    openxlsx::addStyle(wb, "ADSPlanner_affectations", cols = 15:17, rows = 1:(nrow(df) + 1), style = openxlsx::createStyle(textDecoration = "bold"), gridExpand = TRUE) # nolint: seq_linter.
     openxlsx::writeData(wb, "ADSPlanner_affectations", df)
 
     cdf <- data.frame(
