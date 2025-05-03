@@ -34,7 +34,7 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
         }
         if (any(is.na(remaining_capacities()))) {
             print(remaining_capacities())
-            return("Les capacités contiennent des valeurs manquantes.")
+            return("Les capacit\u00E9s contiennent des valeurs manquantes.")
         }
         if (any(as.numeric(remaining_capacities()) < 0)) {
             return("La capacit\u00E9 d'un d\u00E9partement est d\u00E9pass\u00E9e : changez de m\u00E9thode d'affectation.")
