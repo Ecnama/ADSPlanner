@@ -1,5 +1,14 @@
+library(combinat)
+
 NB_SESSIONS <- c(
     "FC_FIRE" = 3,
+    "EMIR" = 2,
+    "MICA" = 2
+)
+
+# TODO: Vérifier automatiquement que ça colle avec le nombre de sessions
+SESSION_DEBUT <- c( # Numéro de la première session pour chaque filière (utile pour celle qui ont moins du maximum de sessions)
+    "FC_FIRE" = 1,
     "EMIR" = 2,
     "MICA" = 2
 )
@@ -9,15 +18,16 @@ NB_SESSIONS <- c(
 #' @param input Input data from the frontend
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
+#' @param capacities The total capacities of the departments over 3 sessions
 #' @param remaining_capacities The remaining capacities of the departments
-handle_affectations <- function(input, output, df, remaining_capacities) {
-    common_checks <- function() {
+handle_affectations <- function(input, output, df, capacities, remaining_capacities) {
+    common_checks <- function(selected) {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
             return(FALSE)
         }
 
-        if (is.null(input$aff_depart_table_rows_selected)) {
+        if (is.null(selected)) {
             showNotification("Aucune ligne s\u00E9lectionn\u00E9e.", type = "warning")
             return(FALSE)
         }
@@ -27,7 +37,7 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
     wish_input <- reactiveVal(1)
 
     observeEvent(input$assign_depart_hard, {
-        if (!common_checks()) {
+        if (!common_checks(input$aff_depart_table_rows_selected)) {
             return()
         }
 
@@ -41,15 +51,21 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
         ))
     })
 
-    handle_operation <- function(operation) {
-        if (!common_checks()) {
+    handle_operation <- function(operation, sessions = FALSE) {
+        selected <- if (sessions) {
+            selected <- input$aff_session_table_rows_selected
+        } else {
+            selected <- input$aff_depart_table_rows_selected
+        }
+
+        if (!common_checks(selected)) {
             return()
         }
 
-        r <- operation(df(), input$aff_depart_table_rows_selected)
+        r <- operation(df(), selected)
         df(r$df)
 
-        if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
+        if (length(r$fails) == length(selected)) {
             showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
         } else if (length(r$fails) > 5) {
             showNotification(paste("Op\u00E9ration impossible pour", length(r$fails), "\u00E9l\u00E9ments "), type = "warning")
@@ -84,18 +100,8 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
         handle_operation(assign_depart_erase)
     })
 
-    # Session assignment
-
     observeEvent(input$assign_session_auto, {
-        if (is.null(df())) {
-            showNotification("Aucun fichier charg\u00E9.", type = "warning")
-            return()
-        }
-
-        df(assign_sessions_auto(df(), input$aff_session_table_rows_selected))
-
-        # showNotification("Affectations de sessions effectu\u00E9es.", type = "message")
-        showNotification("Not implemented yet.", type = "warning")
+        handle_operation(function(df, selection) assign_session_auto(df, selection, capacities()), sessions = TRUE)
     })
 }
 
@@ -122,17 +128,16 @@ assign_depart_hard <- function(df, selection, wish_number) {
     fails <- c()
 
     for (i in selection) {
-        if (is.na(df[[paste("V", wish_number, sep = "")]][i])) {
+        if (is.na(df[[paste0("V", wish_number)]][i])) {
             fails <- c(fails, i)
             next()
         }
         j <- 1
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
-            if (is.na(df[[paste("Aff_depart_", j, sep = "")]][i])) {
-                df[[paste("Aff_depart_", j, sep = "")]][i] <- df[[paste("V", wish_number, sep = "")]][i]
-                # print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
+            if (is.na(df[[paste0("Aff_depart_", j)]][i])) {
+                df[[paste0("Aff_depart_", j)]][i] <- df[[paste0("V", wish_number)]][i]
                 break()
-            } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
+            } else if (df[[paste0("Aff_depart_", j)]][i] == df[[paste0("V", wish_number)]][i]) { # Don't assign the same department twice
                 break()
             } else {
                 j <- j + 1
@@ -187,6 +192,57 @@ assign_depart_soft <- function(df, selection, capacities) {
     list(df = df, fails = fails)
 }
 
-assign_sessions_auto <- function(df, selection) {
-    df
+#' Automatically assign sessions to students based on their department affectations
+#'
+#' @param df The data frame with the students and affected departements
+#' @param selection The indices of students to assign
+#' @param capacities The total capacities of the departments over 3 sessions
+#' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
+assign_session_auto <- function(df, selection, capacities) {
+    nb_in_session <- vector("list", max(NB_SESSIONS))
+
+    fails <- c()
+
+    for (i in selection) { # TODO: Randomize order (but make the seed, like, the name of the first student so it's still deterministic)
+        n_sessions <- NB_SESSIONS[df$Filiere[i]]
+        sessions_offset <- SESSION_DEBUT[df$Filiere[i]] - 1
+
+        # Get all the departments the student was assigned to
+        depart_vec <- sapply(seq_len(n_sessions), function(j) df[[paste0("Aff_depart_", j)]][i])
+
+        # Calculate all the permutations of those departments
+        perms <- combinat::permn(depart_vec)
+
+        works <- TRUE
+        for (perm in perms) {
+            works <- TRUE
+            for (j in 1:n_sessions) {
+                if (perm[j] %in% seq_along(nb_in_session[[j + sessions_offset]])) {
+                    if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
+                        works <- FALSE
+                        break
+                    }
+                }
+            }
+            if (works) {
+                for (j in 1:n_sessions) {
+                    df[[paste0("Aff_session_", j + sessions_offset)]][i] <- perm[j]
+
+                    # Update the department counter properly
+                    if (perm[j] %in% seq_along(nb_in_session[[j + sessions_offset]])) {
+                        nb_in_session[[j + sessions_offset]][perm[j]] <- nb_in_session[[j + sessions_offset]][perm[j]] + 1
+                    } else {
+                        nb_in_session[[j + sessions_offset]][perm[j]] <- 1
+                    }
+                }
+                break
+            }
+        }
+        # If the last permutation was a failure, none of them must have worked
+        if (!works) { # TODO: improve this by backtracking or something, this should ideally never happen
+            fails <- c(fails, i)
+        }
+    }
+
+    list(df = df, fails = fails)
 }
