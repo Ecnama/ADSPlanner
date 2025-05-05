@@ -6,12 +6,24 @@ NB_SESSIONS <- c(
     "MICA" = 2
 )
 
-# TODO: Vérifier automatiquement que ça colle avec le nombre de sessions
-SESSION_DEBUT <- c( # Numéro de la première session pour chaque filière (utile pour celle qui ont moins du maximum de sessions)
+SESSION_DEBUT <- c( # Numero de la première session pour chaque filière (utile pour celle qui ont moins du maximum de sessions)
     "FC_FIRE" = 1,
     "EMIR" = 2,
     "MICA" = 2
 )
+
+
+local({ # Check that the two vectors are consistent
+    if (length(NB_SESSIONS) != length(SESSION_DEBUT)) {
+        stop("Erreur: Le nombre de sessions n'est pas le meme entre NB_SESSIONS et SESSION_DEBUT.")
+    }
+    max_sessions <- max(NB_SESSIONS)
+    for (i in names(NB_SESSIONS)) {
+        if (SESSION_DEBUT[i] - 1 + NB_SESSIONS[i] > max_sessions) {
+            stop(paste("Erreur: trop de sessions pour", i))
+        }
+    }
+})
 
 #' Function used by server to handle affectations
 #'
@@ -199,23 +211,46 @@ assign_depart_soft <- function(df, selection, capacities) {
 #' @param capacities The total capacities of the departments over 3 sessions
 #' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
 assign_session_auto <- function(df, selection, capacities) {
+    showNotification("Calcul des affectations en cours...", type = "message")
+
     capacities <- capacities / 3
 
     nb_in_session <- vector("list", max(NB_SESSIONS))
 
-    fails <- c()
+    fails <- selection
 
-    for (i in selection) { # TODO: Randomize order (but make the seed, like, the name of the first student so it's still deterministic)
+    # Set a deterministic seed
+    set.seed(sum(capacities))
+
+    recursive_assign <- function(sel) {
+        if (length(sel) <= 0) {
+            return(TRUE)
+        }
+
+        i <- sel[1]
+
+        # cat(paste(replicate((length(selection) - length(sel)), " "), df$Nom[i], " ", df$Prenom[i], "\n", sep = ""))
+
         n_sessions <- NB_SESSIONS[df$Filiere[i]]
         sessions_offset <- SESSION_DEBUT[df$Filiere[i]] - 1
 
         # Get all the departments the student was assigned to
         depart_vec <- sapply(seq_len(n_sessions), function(j) df[[paste0("Aff_depart_", j)]][i])
 
+        if (any(is.na(depart_vec))) {
+            # Give up if there's a missing department
+            return(recursive_assign(sel[sel != i]))
+        }
+
         # Calculate all the permutations of those departments
         perms <- combinat::permn(depart_vec)
 
-        works <- TRUE
+        # Vector of working permutations
+        working_perms <- vector("list", 0)
+
+        # Heuristic for each working permutation
+        heuristics <- c()
+
         for (perm in perms) {
             works <- TRUE
             for (j in 1:n_sessions) {
@@ -228,25 +263,67 @@ assign_session_auto <- function(df, selection, capacities) {
             }
 
             if (works) {
-                for (j in 1:n_sessions) {
-                    df[[paste0("Aff_session_", j + sessions_offset)]][i] <- perm[j]
+                heur <- 0
+                for (d in names(capacities)) { # The point of this heuristic is to minimize the variation of the assigned sessions
+                    numbers <- c()
 
-                    # Update the department counter properly
-                    if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
-                        nb_in_session[[j + sessions_offset]][perm[j]] <- nb_in_session[[j + sessions_offset]][perm[j]] + 1
-                    } else {
-                        nb_in_session[[j + sessions_offset]][perm[j]] <- 1
+                    for (n in seq_along(nb_in_session)) {
+                        if (d %in% names(nb_in_session[[n]])) {
+                            numbers <- c(numbers, nb_in_session[[n]][d])
+                        } else {
+                            numbers <- c(numbers, 0)
+                        }
+                        if (n > sessions_offset && n <= sessions_offset + n_sessions) {
+                            if (perm[n - sessions_offset] == d) {
+                                numbers[length(numbers)] <- numbers[length(numbers)] + 1
+                            }
+                        }
                     }
+
+                    heur <- heur + stats::sd(numbers)
                 }
-                break
+
+                heuristics <- c(heuristics, heur)
+                working_perms <- append(working_perms, list(perm))
             }
         }
 
-        # If the last permutation was a failure, none of them must have worked
-        if (!works) { # TODO: improve this by backtracking or something, this should ideally never happen
-            fails <- c(fails, i)
+        if (length(working_perms) == 0) {
+            FALSE # No working permutation, backtracking
+        } else {
+            sorted_indices <- order(heuristics)
+
+            for (id in sorted_indices) { # Try again and again in heuristic order until we get to the end of the tree
+                for (j in 1:n_sessions) {
+                    df[[paste0("Aff_session_", j + sessions_offset)]][i] <<- working_perms[[id]][j]
+                    #print(paste("Affectation de", df$Nom[i], df$Prenom[i], "au departement", working_perms[[id]][j], "en session", j + sessions_offset))
+
+                    # Update the department counter properly
+                    if (working_perms[[id]][j] %in% names(nb_in_session[[j + sessions_offset]])) {
+                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] + 1
+                    } else {
+                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- 1
+                    }
+                }
+
+                # If we assigned, then it's not a fail
+                fails <<- fails[fails != i]
+
+                # print("worked")
+
+                # Recursive call
+                if (recursive_assign(sel[sel != i])) {
+                    return(TRUE) # If we get to the end of the tree, then we can return TRUE
+                }
+
+                # print("nevermind")
+            }
+
+            FALSE # Nothing worked, backtracking
         }
     }
+
+    recursive_assign(sample(selection, length(selection), replace = FALSE))
 
     list(df = df, fails = fails)
 }
