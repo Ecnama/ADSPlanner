@@ -10,7 +10,7 @@ source("R/tables.R")
 #' @param output Output data the frontend will receive
 server <- function(input, output) {
 
-    depart_choices <- c("EII", "ET", "MA", "INFO", "GPM", "GMA", "GCU")
+    depart_choices <- c("EII", "E&T", "MA", "INFO", "GPM", "GMA", "GCU")
 
     df <- reactiveVal(NULL)
 
@@ -40,41 +40,6 @@ server <- function(input, output) {
 
     display_tables(input, output, df) 
     
-    # Bouton "affectation ciblée" déclenche les menus
-observeEvent(input$show_targeted_ui, {
-    output$aff_depart_targeted <- renderUI({
-        tagList(
-            selectInput("old_department", "Département actuel :", 
-                        choices = c("EII", "ET", "MA", "INFO", "GCU", "GPM", "GMA")),
-            selectInput("new_department", "Nouveau département :", 
-                        choices = c("EII", "ET", "MA", "INFO", "GCU", "GPM", "GMA")),
-            actionButton("validate_targeted", "Valider l'affectation", width = 200)
-        )
-    })
-})
-
-# Lorsqu'on valide l'affectation
-observeEvent(input$validate_targeted, {
-    req(df())
     
-    # Sélectionner les étudiants
-    selection <- input$students_table_rows_selected
-    
-    # Vérifier si aucune ligne n'est sélectionnée
-    if (length(selection) == 0) {
-        showNotification("Veuillez sélectionner au moins un étudiant.", type = "error")
-        return()  # Retourne immédiatement sans effectuer l'affectation
-    }
-    
-    # Appliquer l'affectation ciblée
-    updated_df <- targeted_affectation(
-        df(),
-        selection,
-        input$old_department,
-        input$new_department
-    )
-    df(updated_df)
-    showNotification("Affectation ciblée effectuée avec succès.", type = "message")
-})
 
 }

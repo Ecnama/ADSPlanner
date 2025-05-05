@@ -51,7 +51,7 @@ display_tables <- function(input, output, df) {
                 }
                 paste(x, collapse = ", ")
             })
-            df_depart[, !grepl("^Aff", names(df_depart))]
+                df_depart[, !grepl("^Aff", names(df_depart)) | names(df_depart) == "Départements affectés"]
         },
         filter = "top",
         extensions = c("Select", "Buttons", "Scroller"),
@@ -66,4 +66,18 @@ display_tables <- function(input, output, df) {
         selection = "none",
         server = FALSE
     )
+
+    output$aff_depart_targeted_table <- renderDT({
+        df_targeted <- df()
+        # Ajout d'une colonne 'Cible' indiquant si l'affectation a été modifiée
+        df_targeted$Cible <- ifelse(df_targeted$Aff_depart_1 == input$old_department, "Ancien", "Nouveau")
+    
+        # Renvoie un tableau interactif avec des colonnes pertinentes
+        df_targeted[, c("Nom", "Prenom", "Filiere", "Aff_depart_1", "Aff_depart_2", "Aff_depart_3", "Cible")]
+        }, 
+        extensions = c("Select", "Scroller"), 
+        filter = "top", 
+        selection = "none", 
+        server = FALSE
+)
 }

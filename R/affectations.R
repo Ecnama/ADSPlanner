@@ -58,7 +58,55 @@ handle_affectations <- function(input, output, df) {
     observeEvent(input$assign_depart_erase, {
         handle_operation(assign_depart_erase)
     })
+
+  
+
+    observeEvent(input$show_targeted_ui, {
+        if (is.null(df())) {
+            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+            return()
+        }
+        #print("bouton cliqué")
+        #message("bouton cliqué")
+        #showNotification("bouton cliqué", type = "message")
+        output$aff_depart_targeted <- renderUI({
+            tagList(
+                selectInput("old_department", "Département actuel :", 
+                            choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
+                selectInput("new_department", "Nouveau département :", 
+                            choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
+                actionButton("validate_targeted", "Valider l'affectation", width = 200)
+            )
+        })
+
+        observeEvent(input$validate_targeted, {
+            req(df())
+
+            print("le bouton a été cliqué")
+            showNotification("bouton cliqué", type = "message")
+
+            selection <- input$aff_depart_table_rows_selected
+            if (length(selection) == 0) {
+                showNotification("Veuillez sélectionner au moins un étudiant.", type = "error")
+                return()
+            }
+
+             if (is.null(input$old_department) || input$old_department == "" ||
+                is.null(input$new_department) || input$new_department == "") {
+                showNotification("Veuillez sélectionner les deux départements.", type = "error")
+                return()
+            }
+            df(targeted_affectation(df(), input$aff_depart_table_rows_selected,input$old_department, input$new_department))
+
+   
+            showNotification("Affectation ciblée effectuée avec succès.", type = "message")
+  })
+        
+})
+
 }
+
+
 
 #' Erase all affected departments
 #'
@@ -116,6 +164,9 @@ assign_depart_hard <- function(df, selection, wish_number) {
 #' @param new_depart The departement to which the students will be assigned
 #' @return The input data frame with affected departments
 targeted_affectation <- function(df, selection, old_depart, new_depart) {
+    message("blablabla")
+    print(paste("Sélection:", paste(selection, collapse = ", ")))
+    print(paste("Ancien:", old_depart, "| Nouveau:", new_depart))
     for (i in selection) {
         nb_sessions <- NB_SESSIONS[df$Filiere[i]]
         for (j in 1:nb_sessions) {
@@ -129,4 +180,3 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
     }
     df
 }
-
