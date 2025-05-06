@@ -6,7 +6,7 @@ NB_SESSIONS <- c(
     "MICA" = 2
 )
 
-SESSION_DEBUT <- c( # Numero de la première session pour chaque filière (utile pour celle qui ont moins du maximum de sessions)
+SESSION_DEBUT <- c( # Numero de la premiere session pour chaque filiere (utile pour celle qui ont moins du maximum de sessions)
     "FC_FIRE" = 1,
     "EMIR" = 2,
     "MICA" = 2
@@ -113,6 +113,16 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
     })
 
     observeEvent(input$assign_session_auto, {
+        negatives <- remaining_capacities()
+        negatives <- negatives[negatives < 0]
+        if (length(negatives) > 0) {
+            showNotification(
+                paste("Impossible d'affecter les sessions, les d\u00E9partements suivants sont surbook\u00E9s : ", paste(names(negatives), collapse = ", ")),
+                type = "warning"
+            )
+            return()
+        }
+
         handle_operation(function(df, selection) assign_session_auto(df, selection, capacities()), sessions = TRUE)
     })
 }
@@ -229,7 +239,7 @@ assign_session_auto <- function(df, selection, capacities) {
 
         i <- sel[1]
 
-        # cat(paste(replicate((length(selection) - length(sel)), " "), df$Nom[i], " ", df$Prenom[i], "\n", sep = ""))
+        # cat(paste0(strrep(" ", length(selection) - length(sel)), df$Nom[i], " ", df$Prenom[i], "\n"))
 
         n_sessions <- NB_SESSIONS[df$Filiere[i]]
         sessions_offset <- SESSION_DEBUT[df$Filiere[i]] - 1
@@ -253,6 +263,7 @@ assign_session_auto <- function(df, selection, capacities) {
 
         for (perm in perms) {
             works <- TRUE
+
             for (j in 1:n_sessions) {
                 if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
                     if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
@@ -308,22 +319,24 @@ assign_session_auto <- function(df, selection, capacities) {
 
                 # If we assigned, then it's not a fail
                 fails <<- fails[fails != i]
-
-                # print("worked")
+                nb_in_session_backup <- nb_in_session
 
                 # Recursive call
                 if (recursive_assign(sel[sel != i])) {
                     return(TRUE) # If we get to the end of the tree, then we can return TRUE
                 }
 
-                # print("nevermind")
+                # Didn't work, rollback the changes
+                nb_in_session <- nb_in_session_backup
             }
 
             FALSE # Nothing worked, backtracking
         }
     }
 
-    recursive_assign(sample(selection, length(selection), replace = FALSE))
+    if (!recursive_assign(sample(selection, length(selection), replace = FALSE))) {
+        showNotification("Les capacit\u00E9s pourraient ne pas \U00EAtre suffisantes pour ces contraintes.", type = "warning")
+    }
 
     list(df = df, fails = fails)
 }
