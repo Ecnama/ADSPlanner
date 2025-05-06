@@ -1,21 +1,10 @@
 library(combinat)
 
-NB_SESSIONS <- c(
-    "FC_FIRE" = 3,
-    "EMIR" = 2,
-    "MICA" = 2
-)
-
-SESSION_DEBUT <- c( # Numero de la premiere session pour chaque filiere (utile pour celle qui ont moins du maximum de sessions)
-    "FC_FIRE" = 1,
-    "EMIR" = 2,
-    "MICA" = 2
-)
-
+source("R/config.R")
 
 local({ # Check that the two vectors are consistent
     if (length(NB_SESSIONS) != length(SESSION_DEBUT)) {
-        stop("Erreur: Le nombre de sessions n'est pas le meme entre NB_SESSIONS et SESSION_DEBUT.")
+        stop("Erreur: Le nombre de sessions n'est pas le m\U00EAme entre NB_SESSIONS et SESSION_DEBUT.")
     }
     max_sessions <- max(NB_SESSIONS)
     for (i in names(NB_SESSIONS)) {

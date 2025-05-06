@@ -1,6 +1,7 @@
 library(DT)
 
 source("R/DTutilities.R")
+source("R/config.R")
 
 #' Function used by server to display tables
 #'
@@ -56,6 +57,11 @@ display_tables <- function(input, output, df) {
     output$aff_depart_table <- renderDT(
         {
             df_depart <- df()
+            if (input$filter_full) {
+                df_depart <- df_depart[sapply(seq_len(nrow(df_depart)), function(i) {
+                    sum(!is.na(df_depart[i, grepl("^Aff_depart_", names(df_depart))])) < NB_SESSIONS[df_depart$Filiere[i]]
+                }), ]
+            }
             df_depart[["D\u00E9partements affect\u00E9s"]] <- apply(df_depart[, grepl("^Aff_depart_", names(df_depart))], 1, function(x) {
                 x <- x[!is.na(x)]
                 if (length(x) == 0) {
