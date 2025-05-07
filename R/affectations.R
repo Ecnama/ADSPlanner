@@ -1,6 +1,7 @@
 library(combinat)
 
 source("R/config.R")
+source("R/tables.R")
 
 local({ # Check that the two vectors are consistent
     if (length(NB_SESSIONS) != length(SESSION_DEBUT)) {
@@ -38,7 +39,7 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
     wish_input <- reactiveVal(1)
 
     observeEvent(input$assign_depart_hard, {
-        if (!common_checks(input$aff_depart_table_rows_selected)) {
+        if (!common_checks(get_selection(df(), "aff_depart", input))) {
             return()
         }
 
@@ -54,9 +55,9 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
 
     handle_operation <- function(operation, sessions = FALSE) {
         selected <- if (sessions) {
-            selected <- input$aff_session_table_rows_selected
+            selected <- get_selection(df(), "aff_session", input)
         } else {
-            selected <- input$aff_depart_table_rows_selected
+            selected <- get_selection(df(), "aff_depart", input)
         }
 
         if (!common_checks(selected)) {

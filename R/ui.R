@@ -40,7 +40,7 @@ ui <- page_sidebar(
                 uiOutput("capacities_counters"),
                 textOutput("capacity_full")
             ),
-            checkboxInput("filter_full", "Filtrer les \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
+            checkboxInput("filter_full", "Cacher les \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
             uiOutput("aff_depart")
         ),
         nav_panel(

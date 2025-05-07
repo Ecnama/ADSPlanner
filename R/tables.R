@@ -45,7 +45,7 @@ display_tables <- function(input, output, df) {
 
     output$vis_table <- renderDT(
         {
-            df()[, !grepl("^Aff", names(df()))]
+            filter_for_table(df(), "vis", input)
         },
         extensions = c("Scroller"),
         filter = "top",
@@ -56,20 +56,7 @@ display_tables <- function(input, output, df) {
 
     output$aff_depart_table <- renderDT(
         {
-            df_depart <- df()
-            if (input$filter_full) {
-                df_depart <- df_depart[sapply(seq_len(nrow(df_depart)), function(i) {
-                    sum(!is.na(df_depart[i, grepl("^Aff_depart_", names(df_depart))])) < NB_SESSIONS[df_depart$Filiere[i]]
-                }), ]
-            }
-            df_depart[["D\u00E9partements affect\u00E9s"]] <- apply(df_depart[, grepl("^Aff_depart_", names(df_depart))], 1, function(x) {
-                x <- x[!is.na(x)]
-                if (length(x) == 0) {
-                    return(NA)
-                }
-                paste(x, collapse = ", ")
-            })
-            df_depart[, !grepl("^Aff", names(df_depart))]
+            filter_for_table(df(), "aff_depart", input)
         },
         filter = "top",
         extensions = c("Select", "Buttons", "Scroller"),
@@ -88,21 +75,7 @@ display_tables <- function(input, output, df) {
 
     output$aff_session_table <- renderDT(
         {
-            df_session <- df()
-            df_session[["D\u00E9partements affect\u00E9s"]] <- apply(df_session[, grepl("^Aff_depart_", names(df_session))], 1, function(x) {
-                x <- x[!is.na(x)]
-                if (length(x) == 0) {
-                    return(NA)
-                }
-                paste(x, collapse = ", ")
-            })
-            # Reorder the columns
-            names(df_session) <- sub("^Aff_session_1$", "Session 1", names(df_session))
-            names(df_session) <- sub("^Aff_session_2$", "Session 2", names(df_session))
-            names(df_session) <- sub("^Aff_session_3$", "Session 3", names(df_session))
-            df_session <- df_session[, !(grepl("^Aff", names(df_session)) | grepl("^V", names(df_session)))]
-            df_session <- df_session[, c("Nom", "Prenom", "Classement", "Filiere", "D\u00E9partements affect\u00E9s", "Session 1", "Session 2", "Session 3")]
-            df_session
+            filter_for_table(df(), "aff_session", input)
         },
         filter = "top",
         extensions = c("Select", "Buttons", "Scroller"),
@@ -118,4 +91,63 @@ display_tables <- function(input, output, df) {
         selection = "none",
         server = FALSE
     )
+}
+
+filter_for_table <- function(df, table, input) {
+    switch(table,
+        "vis" = {
+            df[, !grepl("^Aff", names(df))]
+        },
+        "aff_depart" = {
+            if (input$filter_full) {
+                df <- df[sapply(seq_len(nrow(df)), function(i) {
+                    sum(!is.na(df[i, grepl("^Aff_depart_", names(df))])) < NB_SESSIONS[df$Filiere[i]]
+                }), ]
+            }
+            df[["D\u00E9partements affect\u00E9s"]] <- apply(df[, grepl("^Aff_depart_", names(df))], 1, function(x) {
+                x <- x[!is.na(x)]
+                if (length(x) == 0) {
+                    return(NA)
+                }
+                paste(x, collapse = ", ")
+            })
+            df[, !grepl("^Aff", names(df))]
+        },
+        "aff_session" = {
+            df[["D\u00E9partements affect\u00E9s"]] <- apply(df[, grepl("^Aff_depart_", names(df))], 1, function(x) {
+                x <- x[!is.na(x)]
+                if (length(x) == 0) {
+                    return(NA)
+                }
+                paste(x, collapse = ", ")
+            })
+            # Reorder the columns
+            names(df) <- sub("^Aff_session_1$", "Session 1", names(df))
+            names(df) <- sub("^Aff_session_2$", "Session 2", names(df))
+            names(df) <- sub("^Aff_session_3$", "Session 3", names(df))
+            df <- df[, !(grepl("^Aff", names(df)) | grepl("^V", names(df)))]
+            df <- df[, c("Nom", "Prenom", "Classement", "Filiere", "D\u00E9partements affect\u00E9s", "Session 1", "Session 2", "Session 3")]
+            df
+        },
+        stop("Unknown table for filtering")
+    )
+}
+
+get_selection <- function(df, table, input) {
+    df <- filter_for_table(df, table, input)
+    realsel <- c()
+    for (i in input[[paste0(table, "_table_rows_selected")]]) {
+        cpt <- 1
+        for (j in rownames(df)) {
+            if (cpt == i) {
+                realsel <- c(realsel, as.numeric(j))
+                break
+            }
+            cpt <- cpt + 1
+        }
+    }
+    print(input[[paste0(table, "_table_rows_selected")]])
+    print(realsel)
+    cat("\n")
+    realsel
 }
