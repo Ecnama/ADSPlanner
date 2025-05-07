@@ -59,64 +59,37 @@ handle_affectations <- function(input, output, df) {
         handle_operation(assign_depart_erase)
     })
 
-    old_selected_department <- ""
-    new_selected_department <- ""
+    
 
-
-    observeEvent(input$show_targeted_ui, {
-        if (is.null(df())) {
-            showNotification("Aucun fichier charg\u00E9.", type = "warning")
+    observeEvent(input$assign_depart_targeted, {
+        if(!common_checks()){
             return()
         }
-        #print("bouton cliqué")
-        #message("bouton cliqué")
-        #showNotification("bouton cliqué", type = "message")
-        output$aff_depart_targeted <- renderUI({
-            tagList(
-                selectInput("old_department", "Département actuel :", 
-                            choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
-                selectInput("new_department", "Nouveau département :", 
-                            choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
-
+        showModal(modalDialog(
+            title = "Affectation ciblée",
+            tagList(selectInput("old_department", "Département actuel :", 
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
+            selectInput("new_department", "Nouveau département :", 
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"))
+            ),
+            footer = tagList(
+                modalButton("Annuler"),
+                actionButton("confirm_assign_targeted", "Confirmer")
             )
-            old_selected_department <- old_department
-            new_selected_department <- new_department
-        })
-                                        
-})
-    observeEvent(input$validate_targeted, {
-            #req(input$old_department, input$new_department)
-            req(df())
+        ))                                
+    })
 
-            print("==> validate_targeted déclenché")
-            print("validate_targeted déclenché")
-            print("Contenu de targeted_df() :")
-            #print(targeted_affectation(df(), input$aff_depart_table_rows_selected,input$old_department, input$new_department))
-            #print(str(reactiveValuesToList(input)))
+    observeEvent(input$confirm_assign_targeted, {
+            print("bouton clikclik")
+            showNotification("bouton cliké", type = "warning")
 
-            print("le bouton a été cliqué")
-            showNotification("bouton cliqué", type = "message")
+            #showNotification("Affectation ciblée effectuée avec succès.", type = "message")
+            removeModal()
+            handle_operation(function(df,selection) assign_depart_targeted(df,selection,input$old_department, input$new_department))
 
-            selection <- input$aff_depart_table_rows_selected
-            if (length(selection) == 0) {
-                showNotification("Veuillez sélectionner au moins un étudiant.", type = "error")
-                return()
-            }
-
-            if (is.null(input$old_department) || is.na(input$old_department) || trimws(input$old_department) == "" ||
-                is.null(input$new_department) || is.na(input$new_department) || trimws(input$new_department) == "") {
-                showNotification("Veuillez sélectionner les deux départements.", type = "error")
-                return()
-}
-            df(targeted_affectation(df(), input$aff_depart_table_rows_selected,old_selected_department, new_selected_department))
-
-   
-            showNotification("Affectation ciblée effectuée avec succès.", type = "message")
-  })
+    })
 
 }
-
-
 
 #' Erase all affected departments
 #'
@@ -158,12 +131,7 @@ assign_depart_hard <- function(df, selection, wish_number) {
             fails <- c(fails, i)
         }
     }
-<<<<<<< HEAD
-
     list(df = df, fails = fails)
-=======
-    df
->>>>>>> 96fd166 (targeted-affectation)
 }
 
 #' assign certain students to a certain departement, deleting it from a certain departement
@@ -183,7 +151,7 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
             col_name <- paste("Aff_depart_", j, sep = "")
             if (!is.na(df[[col_name]][i]) && df[[col_name]][i] == old_depart) {
                 df[[col_name]][i] <- new_depart
-                break
+                break()
             }
         }
 
