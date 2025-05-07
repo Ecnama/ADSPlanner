@@ -26,8 +26,7 @@ ui <- page_sidebar(
                 actionButton("assign_depart_hard_2", "Affectation \"dure\" voeu 2", width = 180),
                 actionButton("assign_depart_hard_3", "Affectation \"dure\" voeu 3", width = 180),
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
-                actionButton("show_targeted_ui", "Affectation ciblée", width = 200),
-                actionButton("validate_targeted", "Valider l'affectation", width = 100)
+                actionButton("assign_depart_targeted", "Affectation ciblée", width = 200),
 
             ),
             uiOutput("aff_depart"),
