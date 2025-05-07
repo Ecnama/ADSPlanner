@@ -29,7 +29,6 @@ ui <- page_sidebar(
                 actionButton("show_targeted_ui", "Affectation ciblée", width = 200),
                 actionButton("validate_targeted", "Valider l'affectation", width = 100)
 
-
             ),
             uiOutput("aff_depart"),
             uiOutput("aff_depart_targeted"),

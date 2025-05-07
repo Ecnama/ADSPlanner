@@ -59,7 +59,9 @@ handle_affectations <- function(input, output, df) {
         handle_operation(assign_depart_erase)
     })
 
-  
+    old_selected_department <- ""
+    new_selected_department <- ""
+
 
     observeEvent(input$show_targeted_ui, {
         if (is.null(df())) {
@@ -75,12 +77,22 @@ handle_affectations <- function(input, output, df) {
                             choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
                 selectInput("new_department", "Nouveau département :", 
                             choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
-                actionButton("validate_targeted", "Valider l'affectation", width = 200)
-            )
-        })
 
-        observeEvent(input$validate_targeted, {
+            )
+            old_selected_department <- old_department
+            new_selected_department <- new_department
+        })
+                                        
+})
+    observeEvent(input$validate_targeted, {
+            #req(input$old_department, input$new_department)
             req(df())
+
+            print("==> validate_targeted déclenché")
+            print("validate_targeted déclenché")
+            print("Contenu de targeted_df() :")
+            #print(targeted_affectation(df(), input$aff_depart_table_rows_selected,input$old_department, input$new_department))
+            #print(str(reactiveValuesToList(input)))
 
             print("le bouton a été cliqué")
             showNotification("bouton cliqué", type = "message")
@@ -91,18 +103,16 @@ handle_affectations <- function(input, output, df) {
                 return()
             }
 
-             if (is.null(input$old_department) || input$old_department == "" ||
-                is.null(input$new_department) || input$new_department == "") {
+            if (is.null(input$old_department) || is.na(input$old_department) || trimws(input$old_department) == "" ||
+                is.null(input$new_department) || is.na(input$new_department) || trimws(input$new_department) == "") {
                 showNotification("Veuillez sélectionner les deux départements.", type = "error")
                 return()
-            }
-            df(targeted_affectation(df(), input$aff_depart_table_rows_selected,input$old_department, input$new_department))
+}
+            df(targeted_affectation(df(), input$aff_depart_table_rows_selected,old_selected_department, new_selected_department))
 
    
             showNotification("Affectation ciblée effectuée avec succès.", type = "message")
   })
-        
-})
 
 }
 
