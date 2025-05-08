@@ -60,7 +60,10 @@ handle_affectations <- function(input, output, df) {
     })
 
     
-
+    old_departement_input <- reactiveVal(NA)
+    new_department_input <-reactiveVal(NA)
+    # du coup idée : ajouter dans les select input un value = old_departement_input() et appeler old_departement_value(input$old_department dans l'autre observe event)
+    # du coup c'est fait mais à tester -> s'inspirer du code d'amance //// :)
     observeEvent(input$assign_depart_targeted, {
         if(!common_checks()){
             return()
@@ -68,9 +71,9 @@ handle_affectations <- function(input, output, df) {
         showModal(modalDialog(
             title = "Affectation ciblée",
             tagList(selectInput("old_department", "Département actuel :", 
-                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA")),
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_departement_input()),
             selectInput("new_department", "Nouveau département :", 
-                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"))
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input())
             ),
             footer = tagList(
                 modalButton("Annuler"),
@@ -82,6 +85,9 @@ handle_affectations <- function(input, output, df) {
     observeEvent(input$confirm_assign_targeted, {
             print("bouton clikclik")
             showNotification("bouton cliké", type = "warning")
+
+            old_departement_input(input$old_department)
+            new_department_input(input$new_department)
 
             #showNotification("Affectation ciblée effectuée avec succès.", type = "message")
             removeModal()
@@ -142,19 +148,22 @@ assign_depart_hard <- function(df, selection, wish_number) {
 #' @param new_depart The departement to which the students will be assigned
 #' @return The input data frame with affected departments
 targeted_affectation <- function(df, selection, old_depart, new_depart) {
-    message("blablabla")
-    print(paste("Sélection:", paste(selection, collapse = ", ")))
-    print(paste("Ancien:", old_depart, "| Nouveau:", new_depart))
+    fails <- c()
     for (i in selection) {
         nb_sessions <- NB_SESSIONS[df$Filiere[i]]
+        success <- FALSE
         for (j in 1:nb_sessions) {
             col_name <- paste("Aff_depart_", j, sep = "")
             if (!is.na(df[[col_name]][i]) && df[[col_name]][i] == old_depart) {
                 df[[col_name]][i] <- new_depart
+                success <- TRUE
                 break()
             }
         }
+        if (!success){
+            fails <- c(fails, i)
+        }
 
     }
-    df
+    list(df = df, fails = fails)
 }
