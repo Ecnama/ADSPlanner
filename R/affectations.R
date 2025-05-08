@@ -141,9 +141,14 @@ assign_depart_hard <- function(df, selection, wish_number) {
 assign_depart_soft <- function(df, selection, capacities) {
     fails <- c()
 
-    for (student in selection) {
-        assignments <- 0
-        for (session in seq_len(NB_SESSIONS[df$Filiere[student]])) {
+    for (session in seq_len(max(NB_SESSIONS))) {
+        for (student in selection) {
+            if (student %in% fails) {
+                next()
+            }
+            if (session > NB_SESSIONS[df$Filiere[student]]) {
+                next()
+            }
             if (!is.na(df[[paste("Aff_depart_", session, sep = "")]][student])) {
                 next()
             }
@@ -152,19 +157,16 @@ assign_depart_soft <- function(df, selection, capacities) {
                 if (is.na(wish)) {
                     break()
                 }
-                if (capacities[wish] > 0 &&
-                        (is.na(df$Aff_depart_1[student]) || wish != df$Aff_depart_1[student]) &&
-                        (is.na(df$Aff_depart_2[student]) || wish != df$Aff_depart_2[student]) &&
-                        (is.na(df$Aff_depart_3[student]) || wish != df$Aff_depart_3[student])) {
-                    df[[paste("Aff_depart_", session, sep = "")]][student] <- wish
+                assigned <- unlist(df[student, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[student]])])
+                if (!is.na(wish) && capacities[wish] > 0 && !(wish %in% assigned)) {
+                    df[[paste0("Aff_depart_", session)]][student] <- wish
                     capacities[wish] <- capacities[wish] - 1
-                    assignments <- assignments + 1
                     break()
                 }
             }
-        }
-        if (assignments != NB_SESSIONS[df$Filiere[student]]) {
-            fails <- c(fails, student)
+            if (is.na(df[[paste("Aff_depart_", session, sep = "")]][student])) {
+                fails <- c(fails, student)
+            }
         }
     }
 

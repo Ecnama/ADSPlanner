@@ -118,6 +118,8 @@ process_data <- function(file_data, data_source) {
         )
     }
 
+    data <- data[order(data$Classement), ]
+    rownames(data) <- NULL
     data
 }
 
