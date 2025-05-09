@@ -26,26 +26,25 @@ ui <- page_sidebar(
     navset_tab(
         nav_panel(
             "Visualisation v\u0153ux",
+            br(),
             uiOutput("vis"),
         ),
         nav_panel(
             "Affectations d\u00E9partements",
-            div(
-                actionButton("assign_depart_erase", "Effacer toutes affectations", width = 180),
-                actionButton("assign_depart_hard", "Affectation \"dure\"", width = 180),
-                actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", width = 200),
+            layout_column_wrap(uiOutput("capacities_counters")),
+            layout_columns(
+                style = "height: 70px; display: flex; align-items: center;",
+                actionButton("assign_depart_erase", "Effacer toutes affectations", style = "height:70px;"),
+                actionButton("assign_depart_hard", "Affectation \"dure\"", style = "height:70px;"),
+                actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", style = "height:70px;"),
+                checkboxInput("filter_full", "Cacher les \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
             ),
-            card(
-                "Capacit\u00E9s restantes",
-                uiOutput("capacities_counters"),
-                textOutput("capacity_full")
-            ),
-            checkboxInput("filter_full", "Cacher les \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
             uiOutput("aff_depart")
         ),
         nav_panel(
             "Affectations sessions",
-            div(
+            br(),
+            layout_columns(
                 actionButton("assign_session_auto", "Affectation automatique des sessions"),
             ),
             uiOutput("aff_session"),

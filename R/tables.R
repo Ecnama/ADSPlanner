@@ -64,7 +64,7 @@ display_tables <- function(input, output, df) {
             dom = '<"top"lfB>rt<"bottom"ip><"clear">',
             buttons = dt_select_deselect_buttons,
             deferRender = TRUE,
-            scrollY = 320,
+            scrollY = 350,
             scroller = TRUE
         ),
         selection = "none",
@@ -82,7 +82,7 @@ display_tables <- function(input, output, df) {
             dom = '<"top"lfB>rt<"bottom"ip><"clear">',
             buttons = dt_select_deselect_buttons,
             deferRender = TRUE,
-            scrollY = 320,
+            scrollY = 350,
             scroller = TRUE
         ),
         selection = "none",
