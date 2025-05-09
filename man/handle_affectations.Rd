@@ -4,7 +4,7 @@
 \alias{handle_affectations}
 \title{Function used by server to handle affectations}
 \usage{
-handle_affectations(input, output, df)
+handle_affectations(input, output, df, remaining_capacities)
 }
 \arguments{
 \item{input}{Input data from the frontend}
@@ -12,6 +12,8 @@ handle_affectations(input, output, df)
 \item{output}{Output data the frontend will receive}
 
 \item{df}{The reactive data frame of students's wishes and affectations}
+
+\item{remaining_capacities}{The remaining capacities of the departments}
 }
 \description{
 Function used by server to handle affectations
