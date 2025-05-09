@@ -6,5 +6,6 @@
 #' @import bslib
 #' @import openxlsx
 #' @import readODS
+#' @import combinat
 NULL
 #> NULL

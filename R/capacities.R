@@ -28,27 +28,11 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
         }
     })
 
-    output$capacity_full <- renderText({
-        if (is.null(remaining_capacities()) || length(remaining_capacities()) == 0) {
-            return("")
-        }
-        if (any(is.na(remaining_capacities()))) {
-            print(remaining_capacities())
-            return("Les capacit\u00E9s contiennent des valeurs manquantes.")
-        }
-        if (any(as.numeric(remaining_capacities()) < 0)) {
-            return("La capacit\u00E9 d'un d\u00E9partement est d\u00E9pass\u00E9e : changez de m\u00E9thode d'affectation.")
-        } else {
-            return("")
-        }
-    })
-
     output$capacities_counters <- renderUI({
         # Récupérer les capacités restantes
         remaining <- remaining_capacities()
         # Vérifier si les capacités sont valides
         if (is.null(remaining) || length(remaining) == 0 || any(is.na(remaining))) {
-            print(remaining)
             return(NULL)
         }
         # Créer un data frame pour les départements et leurs capacités
@@ -58,11 +42,11 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
         )
         # Générer un tableau HTML transposé
         html <- tags$table(
-            style = "width: 40%; border-collapse: collapse; float: right; table-layout: fixed;",
+            style = "width: 100%; border-collapse: collapse; float: right; table-layout: fixed;",
             tags$thead(
                 tags$tr(
                     lapply(capacities_df$Department, function(department) {
-                        tags$th(department, style = "border: 1px solid black; padding: 5px; text-align: center;")
+                        tags$th(department, style = "padding: 3px; text-align: center;")
                     })
                 )
             ),
@@ -72,7 +56,7 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
                         tags$td(
                             capacity,
                             style = paste0(
-                                "border: 1px solid black; padding: 5px; text-align: center;",
+                                "padding: 3px; text-align: center;",
                                 if (capacity < 0) "color: red; font-weight: bold;" else ""
                             )
                         )
@@ -81,7 +65,20 @@ handle_capacities <- function(input, output, df, capacities, remaining_capacitie
             )
         )
         # Retourner le tableau HTML
-        html
+        tagList(
+            br(),
+            "Capacit\u00E9s restantes :",
+            html,
+            if (is.null(remaining_capacities()) || length(remaining_capacities()) == 0) {
+                ""
+            } else if (any(is.na(remaining_capacities()))) {
+                "Les capacit\u00E9s contiennent des valeurs manquantes."
+            } else if (any(as.numeric(remaining_capacities()) < 0)) {
+                "La capacit\u00E9 d'un d\u00E9partement est d\u00E9pass\u00E9e : changez de m\u00E9thode d'affectation."
+            } else {
+                ""
+            }
+        )
     })
 }
 

@@ -1,23 +1,33 @@
-NB_SESSIONS <- c(
-    "FC_FIRE" = 3,
-    "EMIR" = 2,
-    "MICA" = 2
-)
+library(combinat)
+
+source("R/config.R")
+source("R/tables.R")
+
+local({ # Check that the two vectors are consistent
+    if (length(NB_SESSIONS) != length(SESSION_DEBUT)) {
+        stop("Erreur: Le nombre de sessions n'est pas le m\U00EAme entre NB_SESSIONS et SESSION_DEBUT.")
+    }
+    max_sessions <- max(NB_SESSIONS)
+    if (any(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions)) {
+        stop(paste("Erreur: trop de sessions pour", names(which(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions))))
+    }
+})
 
 #' Function used by server to handle affectations
 #'
 #' @param input Input data from the frontend
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
+#' @param capacities The total capacities of the departments over 3 sessions
 #' @param remaining_capacities The remaining capacities of the departments
-handle_affectations <- function(input, output, df, remaining_capacities) {
-    common_checks <- function() {
+handle_affectations <- function(input, output, df, capacities, remaining_capacities) {
+    common_checks <- function(selected) {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
             return(FALSE)
         }
 
-        if (is.null(input$aff_depart_table_rows_selected)) {
+        if (is.null(selected)) {
             showNotification("Aucune ligne s\u00E9lectionn\u00E9e.", type = "warning")
             return(FALSE)
         }
@@ -27,7 +37,7 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
     wish_input <- reactiveVal(1)
 
     observeEvent(input$assign_depart_hard, {
-        if (!common_checks()) {
+        if (!common_checks(get_selection(df(), "aff_depart", input))) {
             return()
         }
 
@@ -41,15 +51,21 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
         ))
     })
 
-    handle_operation <- function(operation) {
-        if (!common_checks()) {
+    handle_operation <- function(operation, sessions = FALSE) {
+        selected <- if (sessions) {
+            selected <- get_selection(df(), "aff_session", input)
+        } else {
+            selected <- get_selection(df(), "aff_depart", input)
+        }
+
+        if (!common_checks(selected)) {
             return()
         }
 
-        r <- operation(df(), input$aff_depart_table_rows_selected)
+        r <- operation(df(), selected)
         df(r$df)
 
-        if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
+        if (length(r$fails) == length(selected)) {
             showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
         } else if (length(r$fails) > 5) {
             showNotification(paste("Op\u00E9ration impossible pour", length(r$fails), "\u00E9l\u00E9ments "), type = "warning")
@@ -83,6 +99,20 @@ handle_affectations <- function(input, output, df, remaining_capacities) {
     observeEvent(input$assign_depart_erase, {
         handle_operation(assign_depart_erase)
     })
+
+    observeEvent(input$assign_session_auto, {
+        negatives <- remaining_capacities()
+        negatives <- negatives[negatives < 0]
+        if (length(negatives) > 0) {
+            showNotification(
+                paste("Impossible d'affecter les sessions, les d\u00E9partements suivants sont surbook\u00E9s : ", paste(names(negatives), collapse = ", ")),
+                type = "warning"
+            )
+            return()
+        }
+
+        handle_operation(function(df, selection) assign_session_auto(df, selection, capacities()), sessions = TRUE)
+    })
 }
 
 #' Erase all affected departments
@@ -108,17 +138,16 @@ assign_depart_hard <- function(df, selection, wish_number) {
     fails <- c()
 
     for (i in selection) {
-        if (is.na(df[[paste("V", wish_number, sep = "")]][i])) {
+        if (is.na(df[[paste0("V", wish_number)]][i])) {
             fails <- c(fails, i)
             next()
         }
         j <- 1
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
-            if (is.na(df[[paste("Aff_depart_", j, sep = "")]][i])) {
-                df[[paste("Aff_depart_", j, sep = "")]][i] <- df[[paste("V", wish_number, sep = "")]][i]
-                # print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
+            if (is.na(df[[paste0("Aff_depart_", j)]][i])) {
+                df[[paste0("Aff_depart_", j)]][i] <- df[[paste0("V", wish_number)]][i]
                 break()
-            } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
+            } else if (df[[paste0("Aff_depart_", j)]][i] == df[[paste0("V", wish_number)]][i]) { # Don't assign the same department twice
                 break()
             } else {
                 j <- j + 1
@@ -168,6 +197,138 @@ assign_depart_soft <- function(df, selection, capacities) {
                 fails <- c(fails, student)
             }
         }
+    }
+
+    list(df = df, fails = fails)
+}
+
+#' Automatically assign sessions to students based on their department affectations
+#'
+#' @param df The data frame with the students and affected departements
+#' @param selection The indices of students to assign
+#' @param capacities The total capacities of the departments over 3 sessions
+#' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
+assign_session_auto <- function(df, selection, capacities) {
+    showNotification("Calcul des affectations en cours...", type = "message")
+
+    capacities <- capacities / 3
+
+    nb_in_session <- vector("list", max(NB_SESSIONS))
+
+    # Everything failed by default, when we assign students we'll remove them
+    fails <- selection
+
+    # Set a deterministic seed
+    set.seed(sum(capacities))
+
+    calculate_heuristic <- function(perm, n_sessions, sessions_offset) {
+        heur <- 0
+        for (d in names(capacities)) { # The point of this heuristic is to minimize the variation of the assigned sessions
+            numbers <- c()
+
+            for (n in seq_along(nb_in_session)) {
+                if (d %in% names(nb_in_session[[n]])) {
+                    numbers <- c(numbers, nb_in_session[[n]][d])
+                } else {
+                    numbers <- c(numbers, 0)
+                }
+                if (n > sessions_offset && n <= sessions_offset + n_sessions) {
+                    if (perm[n - sessions_offset] == d) {
+                        numbers[length(numbers)] <- numbers[length(numbers)] + 1
+                    }
+                }
+            }
+
+            heur <- heur + stats::sd(numbers)
+        }
+        heur
+    }
+
+    recursive_assign <- function(sel) {
+        if (length(sel) <= 0) {
+            return(TRUE)
+        }
+
+        i <- sel[1]
+
+        # cat(paste0(strrep(" ", length(selection) - length(sel)), df$Nom[i], " ", df$Prenom[i], "\n"))
+
+        n_sessions <- NB_SESSIONS[df$Filiere[i]]
+        sessions_offset <- SESSION_DEBUT[df$Filiere[i]] - 1
+
+        # Get all the departments the student was assigned to
+        depart_vec <- sapply(seq_len(n_sessions), function(j) df[[paste0("Aff_depart_", j)]][i])
+
+        if (any(is.na(depart_vec))) {
+            # Give up if there's a missing department
+            return(recursive_assign(sel[sel != i]))
+        }
+
+        # Calculate all the permutations of those departments
+        perms <- combinat::permn(depart_vec)
+
+        # Vector of working permutations
+        working_perms <- vector("list", 0)
+
+        # Heuristic for each working permutation
+        heuristics <- c()
+
+        for (perm in perms) {
+            works <- TRUE
+
+            # Check if the permutation respects the capacities
+            for (j in 1:n_sessions) {
+                if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
+                    if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
+                        works <- FALSE
+                        break
+                    }
+                }
+            }
+
+            if (works) {
+                heuristics <- c(heuristics, calculate_heuristic(perm, n_sessions, sessions_offset))
+                working_perms <- append(working_perms, list(perm))
+            }
+        }
+
+        if (length(working_perms) == 0) {
+            FALSE # No working permutation, backtracking
+        } else {
+            sorted_indices <- order(heuristics)
+
+            for (id in sorted_indices) { # Try again and again in heuristic order until we get to the end of the tree
+                for (j in 1:n_sessions) {
+                    df[[paste0("Aff_session_", j + sessions_offset)]][i] <<- working_perms[[id]][j]
+                    #print(paste("Affectation de", df$Nom[i], df$Prenom[i], "au departement", working_perms[[id]][j], "en session", j + sessions_offset))
+
+                    # Update the department counter properly
+                    if (working_perms[[id]][j] %in% names(nb_in_session[[j + sessions_offset]])) {
+                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] + 1
+                    } else {
+                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- 1
+                    }
+                }
+
+                # If we assigned, then it's not a fail
+                fails <<- fails[fails != i]
+                nb_in_session_backup <- nb_in_session
+
+                # Recursive call
+                if (recursive_assign(sel[sel != i])) {
+                    return(TRUE) # If we get to the end of the tree, then we can return TRUE
+                }
+
+                # Didn't work, rollback the changes
+                nb_in_session <- nb_in_session_backup
+            }
+
+            FALSE # Nothing worked, backtracking
+        }
+    }
+
+    if (!recursive_assign(sample(selection, length(selection), replace = FALSE))) {
+        showNotification("Les capacit\u00E9s pourraient ne pas \U00EAtre suffisantes pour ces contraintes.", type = "warning")
     }
 
     list(df = df, fails = fails)

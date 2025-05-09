@@ -30,7 +30,7 @@ server <- function(input, output, session) {
         }
     })
 
-    handle_affectations(input, output, df, remaining_capacities)
+    handle_affectations(input, output, df, capacities, remaining_capacities)
 
     handle_capacities(input, output, df, capacities, remaining_capacities)
 

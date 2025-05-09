@@ -3,6 +3,7 @@
 export(run)
 import(DT)
 import(bslib)
+import(combinat)
 import(openxlsx)
 import(readODS)
 import(shiny, except=c(dataTableOutput, renderDataTable))
