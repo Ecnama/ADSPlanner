@@ -93,6 +93,11 @@ display_tables <- function(input, output, df) {
     )
 }
 
+#' Filter the data frame for the specified table
+#'
+#' @param df The data frame to filter
+#' @param table The name of the table to filter for
+#' @param input The input data from the frontend
 filter_for_table <- function(df, table, input) {
     switch(table,
         "vis" = {
@@ -133,6 +138,11 @@ filter_for_table <- function(df, table, input) {
     )
 }
 
+#' Get the selection from the specified table
+#'
+#' @param df The main data frame
+#' @param table The name of the table to select from
+#' @param input The input data from the frontend
 get_selection <- function(df, table, input) {
     df <- filter_for_table(df, table, input)
     realsel <- c()
@@ -146,8 +156,6 @@ get_selection <- function(df, table, input) {
             cpt <- cpt + 1
         }
     }
-    print(input[[paste0(table, "_table_rows_selected")]])
-    print(realsel)
-    cat("\n")
+
     realsel
 }

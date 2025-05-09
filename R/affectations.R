@@ -8,10 +8,8 @@ local({ # Check that the two vectors are consistent
         stop("Erreur: Le nombre de sessions n'est pas le m\U00EAme entre NB_SESSIONS et SESSION_DEBUT.")
     }
     max_sessions <- max(NB_SESSIONS)
-    for (i in names(NB_SESSIONS)) {
-        if (SESSION_DEBUT[i] - 1 + NB_SESSIONS[i] > max_sessions) {
-            stop(paste("Erreur: trop de sessions pour", i))
-        }
+    if (any(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions)) {  
+        stop(paste("Erreur: trop de sessions pour", names(which(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions))))  
     }
 })
 
@@ -217,10 +215,34 @@ assign_session_auto <- function(df, selection, capacities) {
 
     nb_in_session <- vector("list", max(NB_SESSIONS))
 
+    # Everything failed by default, when we assign students we'll remove them
     fails <- selection
 
     # Set a deterministic seed
     set.seed(sum(capacities))
+
+    calculate_heuristic <- function(perm, n_sessions, sessions_offset) {
+        heur <- 0
+        for (d in names(capacities)) { # The point of this heuristic is to minimize the variation of the assigned sessions
+            numbers <- c()
+
+            for (n in seq_along(nb_in_session)) {
+                if (d %in% names(nb_in_session[[n]])) {
+                    numbers <- c(numbers, nb_in_session[[n]][d])
+                } else {
+                    numbers <- c(numbers, 0)
+                }
+                if (n > sessions_offset && n <= sessions_offset + n_sessions) {
+                    if (perm[n - sessions_offset] == d) {
+                        numbers[length(numbers)] <- numbers[length(numbers)] + 1
+                    }
+                }
+            }
+
+            heur <- heur + stats::sd(numbers)
+        }
+        heur
+    }
 
     recursive_assign <- function(sel) {
         if (length(sel) <= 0) {
@@ -254,6 +276,7 @@ assign_session_auto <- function(df, selection, capacities) {
         for (perm in perms) {
             works <- TRUE
 
+            # Check if the permutation respects the capacities
             for (j in 1:n_sessions) {
                 if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
                     if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
@@ -264,27 +287,7 @@ assign_session_auto <- function(df, selection, capacities) {
             }
 
             if (works) {
-                heur <- 0
-                for (d in names(capacities)) { # The point of this heuristic is to minimize the variation of the assigned sessions
-                    numbers <- c()
-
-                    for (n in seq_along(nb_in_session)) {
-                        if (d %in% names(nb_in_session[[n]])) {
-                            numbers <- c(numbers, nb_in_session[[n]][d])
-                        } else {
-                            numbers <- c(numbers, 0)
-                        }
-                        if (n > sessions_offset && n <= sessions_offset + n_sessions) {
-                            if (perm[n - sessions_offset] == d) {
-                                numbers[length(numbers)] <- numbers[length(numbers)] + 1
-                            }
-                        }
-                    }
-
-                    heur <- heur + stats::sd(numbers)
-                }
-
-                heuristics <- c(heuristics, heur)
+                heuristics <- c(heuristics, calculate_heuristic(perm, n_sessions, sessions_offset))
                 working_perms <- append(working_perms, list(perm))
             }
         }
