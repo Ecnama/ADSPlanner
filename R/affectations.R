@@ -8,8 +8,8 @@ local({ # Check that the two vectors are consistent
         stop("Erreur: Le nombre de sessions n'est pas le m\U00EAme entre NB_SESSIONS et SESSION_DEBUT.")
     }
     max_sessions <- max(NB_SESSIONS)
-    if (any(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions)) {  
-        stop(paste("Erreur: trop de sessions pour", names(which(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions))))  
+    if (any(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions)) {
+        stop(paste("Erreur: trop de sessions pour", names(which(SESSION_DEBUT - 1 + NB_SESSIONS > max_sessions))))
     }
 })
 

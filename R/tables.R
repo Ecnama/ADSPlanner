@@ -49,7 +49,6 @@ display_tables <- function(input, output, df) {
         },
         extensions = c("Scroller"),
         filter = "top",
-        fillContainer = TRUE,
         selection = "none",
         server = FALSE
     )
@@ -68,7 +67,6 @@ display_tables <- function(input, output, df) {
             scrollY = 320,
             scroller = TRUE
         ),
-        fillContainer = TRUE,
         selection = "none",
         server = FALSE
     )
@@ -87,7 +85,6 @@ display_tables <- function(input, output, df) {
             scrollY = 320,
             scroller = TRUE
         ),
-        fillContainer = TRUE,
         selection = "none",
         server = FALSE
     )
