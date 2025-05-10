@@ -30,10 +30,10 @@ write_output <- function(df, capacities, file) {
 #' @param wb The workbook that will be exported
 #' @param df The main data frame
 color_session_cells <- function(wb, df) {
-    green_style <- openxlsx::createStyle(fgFill = "green", textDecoration = "bold")
-    yellow_style <- openxlsx::createStyle(fgFill = "yellow", textDecoration = "bold")
-    orange_style <- openxlsx::createStyle(fgFill = "orange", textDecoration = "bold")
-    red_style <- openxlsx::createStyle(fgFill = "red", textDecoration = "bold")
+    green_style <- openxlsx::createStyle(fgFill = "#b2ffb2", textDecoration = "bold")
+    yellow_style <- openxlsx::createStyle(fgFill = "#ffffb7", textDecoration = "bold")
+    orange_style <- openxlsx::createStyle(fgFill = "#ffdba5", textDecoration = "bold")
+    red_style <- openxlsx::createStyle(fgFill = "#ffa5b7", textDecoration = "bold")
 
     session_cols <- grep("Aff_session_", names(df))
     aff_session1_idx <- which(names(df) == "Aff_session_1")

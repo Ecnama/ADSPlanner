@@ -53,23 +53,25 @@ display_tables <- function(input, output, df) {
         server = FALSE
     )
 
-    output$aff_depart_table <- renderDT(
-        {
-            filter_for_table(df(), "aff_depart", input)
-        },
-        filter = "top",
-        extensions = c("Select", "Buttons", "Scroller"),
-        options = list(
-            select = list(style = "multi+shift", items = "row"),
-            dom = '<"top"lfB>rt<"bottom"ip><"clear">',
-            buttons = dt_select_deselect_buttons,
-            deferRender = TRUE,
-            scrollY = 350,
-            scroller = TRUE
-        ),
-        selection = "none",
-        server = FALSE
-    )
+    output$aff_depart_table <- renderDT({
+        filtered <- filter_for_table(df(), "aff_depart", input)
+        dt <- datatable(
+            filtered,
+            filter = "top",
+            extensions = c("Select", "Buttons", "Scroller"),
+            options = list(
+                select = list(style = "multi+shift", items = "row"),
+                dom = '<"top"lfB>rt<"bottom"ip><"clear">',
+                buttons = dt_select_deselect_buttons,
+                deferRender = TRUE,
+                scrollY = 350,
+                scroller = TRUE,
+                rowCallback = JS(color_departments_column(df(), filtered))
+            ),
+            selection = "none"
+        )
+        dt
+    }, server = FALSE)
 
     output$aff_session_table <- renderDT(
         {
@@ -155,4 +157,82 @@ get_selection <- function(df, table, input) {
     }
 
     realsel
+}
+
+#' Create a JavaScript function to color the departments column according to the worst wish of a student
+#'
+#' @param df The full main data frame
+#' @param filtered The filtered data frame that will be displayed
+#' @return A JavaScript function as a vector of lines
+color_departments_column <- function(df, filtered) {
+    green_rows <- c()
+    yellow_rows <- c()
+    orange_rows <- c()
+    red_rows <- c()
+
+    aff_cols <- grep("Aff_depart_", names(df))
+    aff_session1_idx <- which(names(df) == "Aff_depart_1")
+    v1_idx <- which(names(filtered) == "V1")
+
+    for (i in seq_len(nrow(filtered))) {
+        wishes <- c()
+        j <- v1_idx
+        while (j <= length(names(filtered)) && grepl("V", names(filtered)[j])) {
+            if (!is.na(filtered[i, j])) {
+                wishes <- c(wishes, filtered[i, j])
+            }
+            j <- j + 1
+        }
+
+        indices <- c()
+        j <- aff_session1_idx - 1
+        for (col in aff_cols) {
+            j <- j + 1
+            if (is.na(df[rownames(filtered)[i], col])) {
+                next
+            }
+
+            indices <- c(indices, match(df[rownames(filtered)[i], col], wishes)[1])
+        }
+
+        if (length(indices) == 0) {
+            next
+        }
+
+        maxi <- max(indices, na.rm = TRUE)
+        if (maxi <= 3) {
+            green_rows <- c(green_rows, i)
+        } else if (maxi <= 4) {
+            yellow_rows <- c(yellow_rows, i)
+        } else if (maxi <= 5) {
+            orange_rows <- c(orange_rows, i)
+        } else if (maxi <= 6) {
+            red_rows <- c(red_rows, i)
+        }
+    }
+
+    column <- which(names(filtered) == "D\u00E9partements affect\u00E9s")
+
+    c(
+        "function(row, data, num, index){",
+        paste0("  const green_rows = [", paste(green_rows - 1, collapse = ","), "];"),
+        paste0("  const yellow_rows = [", paste(yellow_rows - 1, collapse = ","), "];"),
+        paste0("  const orange_rows = [", paste(orange_rows - 1, collapse = ","), "];"),
+        paste0("  const red_rows = [", paste(red_rows - 1, collapse = ","), "];"),
+        "  const firstNumber = parseInt(data[0], 10);",
+        "  if (green_rows.includes(firstNumber)) {",
+        sprintf("    $('td:eq(' + %d + ')', row)", column),
+        "    .css({'background-color': '#b2ffb2'});",
+        "  } else if (yellow_rows.includes(firstNumber)) {",
+        sprintf("    $('td:eq(' + %d + ')', row)", column),
+        "    .css({'background-color': '#ffffb7'});",
+        "  } else if (orange_rows.includes(firstNumber)) {",
+        sprintf("    $('td:eq(' + %d + ')', row)", column),
+        "    .css({'background-color': '#ffdba5'});",
+        "  } else if (red_rows.includes(firstNumber)) {",
+        sprintf("    $('td:eq(' + %d + ')', row)", column),
+        "    .css({'background-color': '#ffa5b7'});",
+        "  }",
+        "}"
+    )
 }
