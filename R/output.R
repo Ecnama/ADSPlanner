@@ -68,7 +68,7 @@ color_session_cells <- function(wb, df) {
                     cell_style <- yellow_style
                 } else if (index <= 5) {
                     cell_style <- orange_style
-                } else if (index <= 6) {
+                } else if (index >= 6) {
                     cell_style <- red_style
                 }
             }

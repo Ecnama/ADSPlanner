@@ -206,7 +206,7 @@ color_departments_column <- function(df, filtered) {
             yellow_rows <- c(yellow_rows, i)
         } else if (maxi <= 5) {
             orange_rows <- c(orange_rows, i)
-        } else if (maxi <= 6) {
+        } else if (maxi >= 6) {
             red_rows <- c(red_rows, i)
         }
     }
@@ -219,7 +219,7 @@ color_departments_column <- function(df, filtered) {
         paste0("  const yellow_rows = [", paste(yellow_rows - 1, collapse = ","), "];"),
         paste0("  const orange_rows = [", paste(orange_rows - 1, collapse = ","), "];"),
         paste0("  const red_rows = [", paste(red_rows - 1, collapse = ","), "];"),
-        "  const firstNumber = parseInt(data[0], 10);",
+        "  const firstNumber = parseInt(data[0], 10) - 1;",
         "  if (green_rows.includes(firstNumber)) {",
         sprintf("    $('td:eq(' + %d + ')', row)", column),
         "    .css({'background-color': '#b2ffb2'});",
