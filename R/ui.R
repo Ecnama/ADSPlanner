@@ -30,7 +30,7 @@ ui <- page_sidebar(
 
             ),
             uiOutput("aff_depart"),
-            uiOutput("aff_depart_targeted"),
+            #uiOutput("aff_depart_targeted"),
 
         ),
         nav_panel(

@@ -10,6 +10,7 @@ NB_SESSIONS <- c(
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
 handle_affectations <- function(input, output, df) {
+
     common_checks <- function() {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
@@ -23,24 +24,40 @@ handle_affectations <- function(input, output, df) {
         TRUE
     }
 
-    handle_operation <- function(operation) {
-        if (!common_checks()) {
+    handle_operation <- function(operation, sessions = FALSE) {
+        selected <- if (sessions) {
+            selected <- get_selection(df(), "aff_session", input)
+        } else {
+            selected <- get_selection(df(), "aff_depart", input)
+        }
+
+        if (!common_checks(selected)) {
             return()
         }
 
-        r <- operation(df(), input$aff_depart_table_rows_selected)
+        r <- operation(df(), selected)
         df(r$df)
 
-        if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
+        if (length(r$fails) == length(selected)) {
             showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
+        } else if (length(r$fails) > 5) {
+            showNotification(paste("Op\u00E9ration impossible pour", length(r$fails), "\u00E9l\u00E9ments "), type = "warning")
         } else if (length(r$fails) > 0) {
-            showNotification(paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
-                                   paste(paste(df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "), collapse = ", "), ".", sep = ""), type = "warning")
+            showNotification(
+                paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
+                    paste(
+                          paste(
+                                df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "),
+                          collapse = ", "), ".",
+                    sep = ""
+                ),
+                type = "warning"
+            )
         } else {
             showNotification("Op\u00E9ration r\u00E9alis\u00E9e.", type = "message")
         }
     }
-
+    
     try_affectation <- function(number) {
         handle_operation(function(df, selection) assign_depart_hard(df, selection, number))
     }
@@ -62,6 +79,18 @@ handle_affectations <- function(input, output, df) {
     
     old_departement_input <- reactiveVal(NA)
     new_department_input <-reactiveVal(NA)
+
+    observeEvent(input$confirm_assign_targeted, {
+        print("bouton clikclik")
+        showNotification("bouton cliké", type = "warning")
+
+        old_departement_input(input$old_department)
+        new_department_input(input$new_department)
+
+            #showNotification("Affectation ciblée effectuée avec succès.", type = "message")            removeModal()
+        handle_operation(function(df,selection) assign_depart_targeted(df,selection,input$old_department, input$new_department))
+
+    })
     # du coup idée : ajouter dans les select input un value = old_departement_input() et appeler old_departement_value(input$old_department dans l'autre observe event)
     # du coup c'est fait mais à tester -> s'inspirer du code d'amance //// :)
     observeEvent(input$assign_depart_targeted, {
@@ -70,31 +99,17 @@ handle_affectations <- function(input, output, df) {
         }
         showModal(modalDialog(
             title = "Affectation ciblée",
-            tagList(selectInput("old_department", "Département actuel :", 
+            selectInput("old_department", "Département actuel :", 
                         choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_departement_input()),
             selectInput("new_department", "Nouveau département :", 
-                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input())
-            ),
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input()),
             footer = tagList(
                 modalButton("Annuler"),
                 actionButton("confirm_assign_targeted", "Confirmer")
             )
-        ))                                
-    })
-
-    observeEvent(input$confirm_assign_targeted, {
-            print("bouton clikclik")
-            showNotification("bouton cliké", type = "warning")
-
-            old_departement_input(input$old_department)
-            new_department_input(input$new_department)
-
-            #showNotification("Affectation ciblée effectuée avec succès.", type = "message")
-            removeModal()
-            handle_operation(function(df,selection) assign_depart_targeted(df,selection,input$old_department, input$new_department))
+        ))   
 
     })
-
 }
 
 #' Erase all affected departments
