@@ -10,7 +10,6 @@ NB_SESSIONS <- c(
 #' @param output Output data the frontend will receive
 #' @param df The reactive data frame of students's wishes and affectations
 handle_affectations <- function(input, output, df) {
-
     common_checks <- function() {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
@@ -24,21 +23,63 @@ handle_affectations <- function(input, output, df) {
         TRUE
     }
 
-    handle_operation <- function(operation, sessions = FALSE) {
-        selected <- if (sessions) {
-            selected <- get_selection(df(), "aff_session", input)
-        } else {
-            selected <- get_selection(df(), "aff_depart", input)
-        }
+    wish_input <- reactiveVal(1)
 
-        if (!common_checks(selected)) {
+    observeEvent(input$assign_depart_hard, {
+        if (!common_checks()) {
             return()
         }
 
-        r <- operation(df(), selected)
+        showModal(modalDialog(
+            title = "Affectation dure",
+            numericInput("wish_selection", "Num\u00E9ro de voeu", value = wish_input(), min = 1, max = 7),
+            footer = tagList(
+                modalButton("Annuler"),
+                actionButton("confirm_assign_depart_hard", "Confirmer")
+            )
+        ))
+    })
+
+    old_department_input <- reactiveVal(NA)
+    new_department_input <- reactiveVal(NA) 
+
+    observeEvent(input$assign_depart_targeted, {
+        if (!common_checks()) {
+            return()
+        }
+
+        showModal(modalDialog(
+        title = "Affectation ciblée",
+        tagList(
+            selectInput("old_department", "Département actuel :",
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_department_input(), selectize = FALSE),
+            selectInput("new_department", "Nouveau département :",
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input(), selectize = FALSE)
+        ),
+        footer = tagList(
+            modalButton("Annuler"),
+            actionButton("confirm_assign_targeted", "Confirmer"))
+        ))
+
+        observeEvent(input$confirm_assign_targeted, ignoreInit = TRUE, {
+            
+            old_department_input(input$old_department)
+            new_department_input(input$new_department)
+
+            removeModal()
+            handle_operation(function(df, selection) targeted_affectation(df, selection, input$old_department, input$new_department))
+        }, once = TRUE)
+    })
+
+    handle_operation <- function(operation) {
+        if (!common_checks()) {
+            return()
+        }
+
+        r <- operation(df(), input$aff_depart_table_rows_selected)
         df(r$df)
 
-        if (length(r$fails) == length(selected)) {
+        if (length(r$fails) == length(input$aff_depart_table_rows_selected)) {
             showNotification("Op\u00E9ration impossible pour tous les \u00E9l\u00E9ments s\u00E9lectionn\u00E9s.", type = "warning")
         } else if (length(r$fails) > 5) {
             showNotification(paste("Op\u00E9ration impossible pour", length(r$fails), "\u00E9l\u00E9ments "), type = "warning")
@@ -57,16 +98,13 @@ handle_affectations <- function(input, output, df) {
             showNotification("Op\u00E9ration r\u00E9alis\u00E9e.", type = "message")
         }
     }
-    
-    try_affectation <- function(number) {
-        handle_operation(function(df, selection) assign_depart_hard(df, selection, number))
-    }
 
-    observeEvent(input$assign_depart_hard_1, try_affectation(1))
+    observeEvent(input$confirm_assign_depart_hard, {
+        wish_input(input$wish_selection)
+        removeModal()
 
-    observeEvent(input$assign_depart_hard_2, try_affectation(2))
-
-    observeEvent(input$assign_depart_hard_3, try_affectation(3))
+        handle_operation(function(df, selection) assign_depart_hard(df, selection, wish_input()))
+    })
 
     observeEvent(input$assign_depart_real, {
         showNotification("Not implemented yet.", type = "warning")
@@ -74,41 +112,6 @@ handle_affectations <- function(input, output, df) {
 
     observeEvent(input$assign_depart_erase, {
         handle_operation(assign_depart_erase)
-    })
-
-    
-    old_departement_input <- reactiveVal(NA)
-    new_department_input <-reactiveVal(NA)
-
-    observeEvent(input$confirm_assign_targeted, {
-        print("bouton clikclik")
-        showNotification("bouton cliké", type = "warning")
-
-        old_departement_input(input$old_department)
-        new_department_input(input$new_department)
-
-            #showNotification("Affectation ciblée effectuée avec succès.", type = "message")            removeModal()
-        handle_operation(function(df,selection) assign_depart_targeted(df,selection,input$old_department, input$new_department))
-
-    })
-    # du coup idée : ajouter dans les select input un value = old_departement_input() et appeler old_departement_value(input$old_department dans l'autre observe event)
-    # du coup c'est fait mais à tester -> s'inspirer du code d'amance //// :)
-    observeEvent(input$assign_depart_targeted, {
-        if(!common_checks()){
-            return()
-        }
-        showModal(modalDialog(
-            title = "Affectation ciblée",
-            selectInput("old_department", "Département actuel :", 
-                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_departement_input()),
-            selectInput("new_department", "Nouveau département :", 
-                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input()),
-            footer = tagList(
-                modalButton("Annuler"),
-                actionButton("confirm_assign_targeted", "Confirmer")
-            )
-        ))   
-
     })
 }
 
@@ -135,14 +138,16 @@ assign_depart_hard <- function(df, selection, wish_number) {
     fails <- c()
 
     for (i in selection) {
+        if (is.na(df[[paste("V", wish_number, sep = "")]][i])) {
+            fails <- c(fails, i)
+            next()
+        }
         j <- 1
         while (j <= NB_SESSIONS[df$Filiere[i]]) {
             if (is.na(df[[paste("Aff_depart_", j, sep = "")]][i])) {
                 df[[paste("Aff_depart_", j, sep = "")]][i] <- df[[paste("V", wish_number, sep = "")]][i]
-                #print(paste("Assigned", df[[paste("V", wish_number, sep = "")]][i], "to", df$Nom[i], df$Prenom[i]))
                 break()
             } else if (df[[paste("Aff_depart_", j, sep = "")]][i] == df[[paste("V", wish_number, sep = "")]][i]) { # Don't assign the same department twice
-                fails <- c(fails, i)
                 break()
             } else {
                 j <- j + 1
@@ -152,6 +157,7 @@ assign_depart_hard <- function(df, selection, wish_number) {
             fails <- c(fails, i)
         }
     }
+
     list(df = df, fails = fails)
 }
 
@@ -165,20 +171,26 @@ assign_depart_hard <- function(df, selection, wish_number) {
 targeted_affectation <- function(df, selection, old_depart, new_depart) {
     fails <- c()
     for (i in selection) {
-        nb_sessions <- NB_SESSIONS[df$Filiere[i]]
+        j <- 1
         success <- FALSE
-        for (j in 1:nb_sessions) {
+        while (j <= NB_SESSIONS[df$Filiere[i]]) {
             col_name <- paste("Aff_depart_", j, sep = "")
-            if (!is.na(df[[col_name]][i]) && df[[col_name]][i] == old_depart) {
+            current_val <- df[[col_name]][i]
+            if (!is.na(current_val) && current_val == old_depart) {
+                if (old_depart != new_depart &&
+                    any(df[i, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]])] == new_depart, na.rm = TRUE)) {
+                    fails <- c(fails, i)
+                    break
+                }
                 df[[col_name]][i] <- new_depart
                 success <- TRUE
-                break()
+                break
             }
+            j <- j + 1
         }
-        if (!success){
+        if (!success) {
             fails <- c(fails, i)
         }
-
     }
     list(df = df, fails = fails)
 }
