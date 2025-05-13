@@ -250,7 +250,7 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
             current_val <- df[[col_name]][i]
             if (!is.na(current_val) && current_val == old_depart) {
                 if (old_depart != new_depart &&
-                    any(df[i, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]])] == new_depart, na.rm = TRUE)) {
+                        any(df[i, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]])] == new_depart, na.rm = TRUE)) {
                     fails <- c(fails, i)
                     break
                 }
