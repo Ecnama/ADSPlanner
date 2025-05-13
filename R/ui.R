@@ -37,7 +37,7 @@ ui <- page_sidebar(
                 actionButton("assign_depart_erase", "Effacer toutes affectations", style = "height:70px;"),
                 actionButton("assign_depart_hard", "Affectation \"dure\"", style = "height:70px;"),
                 actionButton("assign_depart_real", "Affectation r\u00E9elle voeux restants", style = "height:70px;"),
-                actionButton("assign_depart_targeted", "Affectation cibl\u00E9e", width = 200),
+                actionButton("assign_depart_targeted", "Affectation cibl\u00E9e", style = "height:70px;"),
                 checkboxInput("filter_full", "Cacher les \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
             ),
             uiOutput("aff_depart")
