@@ -233,7 +233,7 @@ assign_depart_soft <- function(df, selection, capacities) {
     list(df = df, fails = fails)
 }
 
-#' assign certain students to a certain departement, deleting it from a certain departement
+#' Assign certain students to a certain departement, deleting it from a certain departement
 #'
 #' @param df The data frame with the students and their wishes
 #' @param selection The indices of students to assign

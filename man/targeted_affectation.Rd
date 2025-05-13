@@ -2,7 +2,7 @@
 % Please edit documentation in R/affectations.R
 \name{targeted_affectation}
 \alias{targeted_affectation}
-\title{assign certain students to a certain departement, deleting it from a certain departement}
+\title{Assign certain students to a certain departement, deleting it from a certain departement}
 \usage{
 targeted_affectation(df, selection, old_depart, new_depart)
 }
@@ -19,5 +19,5 @@ targeted_affectation(df, selection, old_depart, new_depart)
 The input data frame with affected departments
 }
 \description{
-assign certain students to a certain departement, deleting it from a certain departement
+Assign certain students to a certain departement, deleting it from a certain departement
 }
