@@ -51,6 +51,37 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
         ))
     })
 
+    old_department_input <- reactiveVal(NA)
+    new_department_input <- reactiveVal(NA) 
+
+    observeEvent(input$assign_depart_targeted, {
+        if (!common_checks(get_selection(df(), "aff_depart", input))) {
+            return()
+        }
+
+        showModal(modalDialog(
+        title = "Affectation ciblée",
+        tagList(
+            selectInput("old_department", "Département actuel :",
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_department_input(), selectize = FALSE),
+            selectInput("new_department", "Nouveau département :",
+                        choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input(), selectize = FALSE)
+        ),
+        footer = tagList(
+            modalButton("Annuler"),
+            actionButton("confirm_assign_targeted", "Confirmer"))
+        ))
+
+        observeEvent(input$confirm_assign_targeted, ignoreInit = TRUE, {
+            
+            old_department_input(input$old_department)
+            new_department_input(input$new_department)
+
+            removeModal()
+            handle_operation(function(df, selection) targeted_affectation(df, selection, input$old_department, input$new_department))
+        }, once = TRUE)
+    })
+
     handle_operation <- function(operation, sessions = FALSE) {
         selected <- if (sessions) {
             selected <- get_selection(df(), "aff_session", input)
@@ -199,6 +230,40 @@ assign_depart_soft <- function(df, selection, capacities) {
         }
     }
 
+    list(df = df, fails = fails)
+}
+
+#' assign certain students to a certain departement, deleting it from a certain departement
+#'
+#' @param df The data frame with the students and their wishes
+#' @param selection The indices of students to assign
+#' @param old_depart The departement the students were assigned
+#' @param new_depart The departement to which the students will be assigned
+#' @return The input data frame with affected departments
+targeted_affectation <- function(df, selection, old_depart, new_depart) {
+    fails <- c()
+    for (i in selection) {
+        j <- 1
+        success <- FALSE
+        while (j <= NB_SESSIONS[df$Filiere[i]]) {
+            col_name <- paste("Aff_depart_", j, sep = "")
+            current_val <- df[[col_name]][i]
+            if (!is.na(current_val) && current_val == old_depart) {
+                if (old_depart != new_depart &&
+                    any(df[i, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]])] == new_depart, na.rm = TRUE)) {
+                    fails <- c(fails, i)
+                    break
+                }
+                df[[col_name]][i] <- new_depart
+                success <- TRUE
+                break
+            }
+            j <- j + 1
+        }
+        if (!success) {
+            fails <- c(fails, i)
+        }
+    }
     list(df = df, fails = fails)
 }
 
