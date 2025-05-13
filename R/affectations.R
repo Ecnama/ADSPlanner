@@ -60,11 +60,11 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
         }
 
         showModal(modalDialog(
-            title = "Affectation ciblée",
+            title = "Affectation cibl\u00E9e",
             tagList(
-                selectInput("old_department", "Département actuel :",
+                selectInput("old_department", "D\u00E9partement actuel :",
                             choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_department_input(), selectize = FALSE),
-                selectInput("new_department", "Nouveau département :",
+                selectInput("new_department", "Nouveau d\u00E9partement :",
                             choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input(), selectize = FALSE)
             ),
             footer = tagList(
