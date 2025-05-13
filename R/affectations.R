@@ -21,13 +21,13 @@ local({ # Check that the two vectors are consistent
 #' @param capacities The total capacities of the departments over 3 sessions
 #' @param remaining_capacities The remaining capacities of the departments
 handle_affectations <- function(input, output, df, capacities, remaining_capacities) {
-    common_checks <- function(selected) {
+    common_checks <- function(table) {
         if (is.null(df())) {
             showNotification("Aucun fichier charg\u00E9.", type = "warning")
             return(FALSE)
         }
 
-        if (is.null(selected)) {
+        if (is.null(get_selection(df(), table, input))) {
             showNotification("Aucune ligne s\u00E9lectionn\u00E9e.", type = "warning")
             return(FALSE)
         }
@@ -37,7 +37,7 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
     wish_input <- reactiveVal(1)
 
     observeEvent(input$assign_depart_hard, {
-        if (!common_checks(get_selection(df(), "aff_depart", input))) {
+        if (!common_checks("aff_depart")) {
             return()
         }
 
@@ -55,7 +55,7 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
     new_department_input <- reactiveVal(NA)
 
     observeEvent(input$assign_depart_targeted, {
-        if (!common_checks(get_selection(df(), "aff_depart", input))) {
+        if (!common_checks("aff_depart")) {
             return()
         }
 
@@ -86,15 +86,17 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
     })
 
     handle_operation <- function(operation, sessions = FALSE) {
-        selected <- if (sessions) {
-            selected <- get_selection(df(), "aff_session", input)
+        table <- if (sessions) {
+            "aff_session"
         } else {
-            selected <- get_selection(df(), "aff_depart", input)
+            "aff_depart"
         }
 
-        if (!common_checks(selected)) {
+        if (!common_checks(table)) {
             return()
         }
+
+        selected <- get_selection(df(), table, input)
 
         r <- operation(df(), selected)
         df(r$df)
