@@ -240,6 +240,7 @@ assign_depart_soft <- function(df, selection, capacities) {
 }
 
 #' Assign certain students to a certain departement, deleting it from a certain departement
+#' If the student is not assigned to the old department, it will still be assigned to the new department
 #'
 #' @param df The data frame with the students and their wishes
 #' @param selection The indices of students to assign
@@ -249,6 +250,9 @@ assign_depart_soft <- function(df, selection, capacities) {
 targeted_affectation <- function(df, selection, old_depart, new_depart) {
     fails <- c()
     for (i in selection) {
+        if (any(df[i, paste("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]], sep = "")] == new_depart)) {
+            next()
+        }
         success <- FALSE
         for (j in 1:NB_SESSIONS[df$Filiere[i]]) {
             col_name <- paste("Aff_depart_", j, sep = "")
@@ -257,8 +261,6 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
                 df[[col_name]][i] <- new_depart
                 success <- TRUE
                 break()
-            } else if (current_val == new_depart) {
-                success <- TRUE
             }
         }
         if (!success) {
