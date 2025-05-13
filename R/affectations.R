@@ -233,6 +233,40 @@ assign_depart_soft <- function(df, selection, capacities) {
     list(df = df, fails = fails)
 }
 
+#' assign certain students to a certain departement, deleting it from a certain departement
+#'
+#' @param df The data frame with the students and their wishes
+#' @param selection The indices of students to assign
+#' @param old_depart The departement the students were assigned
+#' @param new_depart The departement to which the students will be assigned
+#' @return The input data frame with affected departments
+targeted_affectation <- function(df, selection, old_depart, new_depart) {
+    fails <- c()
+    for (i in selection) {
+        j <- 1
+        success <- FALSE
+        while (j <= NB_SESSIONS[df$Filiere[i]]) {
+            col_name <- paste("Aff_depart_", j, sep = "")
+            current_val <- df[[col_name]][i]
+            if (!is.na(current_val) && current_val == old_depart) {
+                if (old_depart != new_depart &&
+                    any(df[i, paste0("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]])] == new_depart, na.rm = TRUE)) {
+                    fails <- c(fails, i)
+                    break
+                }
+                df[[col_name]][i] <- new_depart
+                success <- TRUE
+                break
+            }
+            j <- j + 1
+        }
+        if (!success) {
+            fails <- c(fails, i)
+        }
+    }
+    list(df = df, fails = fails)
+}
+
 #' Automatically assign sessions to students based on their department affectations
 #'
 #' @param df The data frame with the students and affected departements
