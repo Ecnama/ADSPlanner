@@ -51,6 +51,40 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
         ))
     })
 
+    old_department_input <- reactiveVal(NA)
+    new_department_input <- reactiveVal(NA)
+
+    observeEvent(input$assign_depart_targeted, {
+        if (!common_checks(get_selection(df(), "aff_depart", input))) {
+            return()
+        }
+
+        showModal(modalDialog(
+            title = "Affectation cibl\u00E9e",
+            tagList(
+                selectInput("old_department", "D\u00E9partement actuel :",
+                    choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = old_department_input(), selectize = FALSE
+                ),
+                selectInput("new_department", "Nouveau d\u00E9partement :",
+                    choices = c("EII", "E&T", "MA", "INFO", "GCU", "GPM", "GMA"), selected = new_department_input(), selectize = FALSE
+                )
+            ),
+            footer = tagList(
+                modalButton("Annuler"),
+                actionButton("confirm_assign_targeted", "Confirmer")
+            )
+        ))
+
+    })
+
+    observeEvent(input$confirm_assign_targeted, {
+        old_department_input(input$old_department)
+        new_department_input(input$new_department)
+
+        removeModal()
+        handle_operation(function(df, selection) targeted_affectation(df, selection, input$old_department, input$new_department))
+    })
+
     handle_operation <- function(operation, sessions = FALSE) {
         selected <- if (sessions) {
             selected <- get_selection(df(), "aff_session", input)
@@ -73,9 +107,12 @@ handle_affectations <- function(input, output, df, capacities, remaining_capacit
             showNotification(
                 paste("Op\u00E9ration impossible pour les \u00E9l\u00E9ments ",
                     paste(
-                          paste(
-                                df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom, sep = " "),
-                          collapse = ", "), ".",
+                        paste(
+                            df()[r$fails, ]$Nom, df()[r$fails, ]$Prenom,
+                            sep = " "
+                        ),
+                        collapse = ", "
+                    ), ".",
                     sep = ""
                 ),
                 type = "warning"
@@ -202,6 +239,37 @@ assign_depart_soft <- function(df, selection, capacities) {
     list(df = df, fails = fails)
 }
 
+#' Assign certain students to a certain departement, deleting it from a certain departement
+#' If the student is not assigned to the old department, it will still be assigned to the new department
+#'
+#' @param df The data frame with the students and their wishes
+#' @param selection The indices of students to assign
+#' @param old_depart The departement the students were assigned
+#' @param new_depart The departement to which the students will be assigned
+#' @return The input data frame with affected departments
+targeted_affectation <- function(df, selection, old_depart, new_depart) {
+    fails <- c()
+    for (i in selection) {
+        if (any(df[i, paste("Aff_depart_", 1:NB_SESSIONS[df$Filiere[i]], sep = "")] == new_depart)) {
+            next()
+        }
+        success <- FALSE
+        for (j in 1:NB_SESSIONS[df$Filiere[i]]) {
+            col_name <- paste("Aff_depart_", j, sep = "")
+            current_val <- df[[col_name]][i]
+            if (is.na(current_val) || current_val == old_depart) {
+                df[[col_name]][i] <- new_depart
+                success <- TRUE
+                break()
+            }
+        }
+        if (!success) {
+            fails <- c(fails, i)
+        }
+    }
+    list(df = df, fails = fails)
+}
+
 #' Automatically assign sessions to students based on their department affectations
 #'
 #' @param df The data frame with the students and affected departements
@@ -300,7 +368,7 @@ assign_session_auto <- function(df, selection, capacities) {
             for (id in sorted_indices) { # Try again and again in heuristic order until we get to the end of the tree
                 for (j in 1:n_sessions) {
                     df[[paste0("Aff_session_", j + sessions_offset)]][i] <<- working_perms[[id]][j]
-                    #print(paste("Affectation de", df$Nom[i], df$Prenom[i], "au departement", working_perms[[id]][j], "en session", j + sessions_offset))
+                    # print(paste("Affectation de", df$Nom[i], df$Prenom[i], "au departement", working_perms[[id]][j], "en session", j + sessions_offset))
 
                     # Update the department counter properly
                     if (working_perms[[id]][j] %in% names(nb_in_session[[j + sessions_offset]])) {
