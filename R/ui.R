@@ -49,6 +49,7 @@ ui <- page_sidebar(
         ),
         nav_panel(
             "Affectation d\u00E9partements",
+            br(),
             layout_column_wrap(uiOutput("depart_capacities_counter")),
             layout_columns(
                 style = "height: 70px; display: flex; align-items: center;",
@@ -77,8 +78,10 @@ ui <- page_sidebar(
         ),
         nav_panel(
             "Affectation sessions",
+            br(),
             layout_column_wrap(uiOutput("session_capacities_counter")),
             layout_columns(
+                style = "height: 70px; display: flex; align-items: center;",
                 operation_tooltip(
                     actionButton("assign_session_erase", "Effacer toutes affectations", style = "height:70px;"),
                     "Efface toutes les affectations de sessions des \u00E9tudiants s\u00E9lectionn\u00E9s"

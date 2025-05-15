@@ -69,7 +69,6 @@ handle_capacities <- function(input, output, df, capacities, remaining_depart_ca
 
         # Retourner le tableau HTML
         tagList(
-            br(),
             "Capacit\u00E9s restantes :",
             html,
             if (any(is.na(remaining))) {
@@ -124,8 +123,7 @@ handle_capacities <- function(input, output, df, capacities, remaining_depart_ca
 
         # Retourner le tableau HTML
         tagList(
-            br(),
-            "Capacit\u00E9s restantes :",
+            "Places restantes :",
             html,
             if (any(is.na(remaining))) {
                 "Les capacit\u00E9s contiennent des valeurs manquantes."
