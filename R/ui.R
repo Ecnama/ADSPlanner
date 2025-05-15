@@ -89,7 +89,7 @@ ui <- page_sidebar(
                 ),
                 operation_tooltip(
                     actionButton("assign_session_manual", "Affectation manuelle", style = "height:70px;"),
-                    "Affectation manuelle d'un d\u00E9partements \u00E0 une session, en le d\u00E9pla\u00E7ant si il est d\u00E9j\u00E0 affect\u00E9 \u00E0 une autre session"
+                    "Affectation manuelle d'un d\u00E9partement \u00E0 une session, en le d\u00E9pla\u00E7ant si il est d\u00E9j\u00E0 affect\u00E9 \u00E0 une autre session"
                 ),
                 operation_tooltip(
                     checkboxInput("filter_full_session", "Cacher \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
