@@ -48,8 +48,8 @@ ui <- page_sidebar(
             uiOutput("vis"),
         ),
         nav_panel(
-            "Affectations d\u00E9partements",
-            layout_column_wrap(uiOutput("capacities_counters")),
+            "Affectation d\u00E9partements",
+            layout_column_wrap(uiOutput("depart_capacities_counter")),
             layout_columns(
                 style = "height: 70px; display: flex; align-items: center;",
                 operation_tooltip(
@@ -69,19 +69,31 @@ ui <- page_sidebar(
                     "Affectation intelligente des d\u00E9partements prenant en compte les places restantes et le classement des \u00E9tudiants"
                 ),
                 operation_tooltip(
-                    checkboxInput("filter_full", "Cacher \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
+                    checkboxInput("filter_full_depart", "Cacher \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
                     "Cache les \u00E9tudiants \u00E9tant affect\u00E9s \u00E0 assez de d\u00E9partements pour toutes leurs sessions"
                 ),
             ),
             uiOutput("aff_depart")
         ),
         nav_panel(
-            "Affectations sessions",
-            br(),
+            "Affectation sessions",
+            layout_column_wrap(uiOutput("session_capacities_counter")),
             layout_columns(
                 operation_tooltip(
-                    actionButton("assign_session_auto", "Affectation automatique des sessions"),
+                    actionButton("assign_session_erase", "Effacer toutes affectations", style = "height:70px;"),
+                    "Efface toutes les affectations de sessions des \u00E9tudiants s\u00E9lectionn\u00E9s"
+                ),
+                operation_tooltip(
+                    actionButton("assign_session_auto", "Affectation automatique", style = "height:70px;"),
                     "Affectation automatique des sessions en fonction des d\u00E9partements affect\u00E9s"
+                ),
+                operation_tooltip(
+                    actionButton("assign_session_manual", "Affectation manuelle", style = "height:70px;"),
+                    "Affectation manuelle d'un d\u00E9partements \u00E0 une session, en le d\u00E9pla\u00E7ant si il est d\u00E9j\u00E0 affect\u00E9 \u00E0 une autre session"
+                ),
+                operation_tooltip(
+                    checkboxInput("filter_full_session", "Cacher \u00E9tudiants compl\u00E8tement affect\u00E9s", value = FALSE),
+                    "Cache les \u00E9tudiants \u00E9tant affect\u00E9s \u00E0 toutes leurs sessions"
                 ),
             ),
             uiOutput("aff_session"),

@@ -15,7 +15,9 @@ server <- function(input, output, session) {
 
     capacities <- reactiveVal(NULL)
 
-    remaining_capacities <- reactiveVal(NULL)
+    remaining_depart_capacities <- reactiveVal(NULL)
+
+    remaining_session_capacities <- reactiveVal(NULL)
 
     observe({
         if (!is.null(input$file)) {
@@ -30,9 +32,9 @@ server <- function(input, output, session) {
         }
     })
 
-    handle_affectations(input, output, df, capacities, remaining_capacities)
+    handle_affectations(input, output, df, capacities, remaining_depart_capacities, remaining_session_capacities)
 
-    handle_capacities(input, output, df, capacities, remaining_capacities)
+    handle_capacities(input, output, df, capacities, remaining_depart_capacities, remaining_session_capacities)
 
     output$download_button <- renderUI({
         if (is.null(df())) {

@@ -3,7 +3,7 @@ library(openxlsx)
 # Lists of first names/last names/sector to generate fake students
 sample_first_name <- c("Hector", "Mari", "Amance", "Peter", "Nathalie", "Agathe", "Romain", "Eve", "Marc", "Enzo")
 sample_last_name <- c("Dupont", "Nguyen", "Martin", "Garcia", "Fouquier", "Dubois", "Jack", "Boisu", "Zaky", "Mathy")
-sector <- c(rep("1 : FC_FIRE (Filiere classique ou filiere internationale)", 140), rep("2 : EMIR", 30), rep("3 : MICA", 30))
+sector <- c(rep("1 : FC_FIRE (Filiere classique ou filiere internationale)", 245), rep("2 : EMIR", 15), rep("3 : MICA", 20))
 
 # Lists of available answers for each sector
 classic_answer <- c("EII", "MA", "INFO", "E&T", "GPM", "GMA", "GCU")
@@ -15,9 +15,6 @@ column_choice <- c(
     paste0("Q03_VoeuxEMIR->", emir_answer),
     paste0("Q04_voeuxMICA->", mica_answer)
 )
-
-# Quantity of students to generate
-students_quantity <- 200
 
 #' Generates student's wishs in fonction of their sector (MICA/EMIR/CLASSIQUE)
 #'
@@ -39,15 +36,18 @@ wishes_generation <- function(sector) {
     result
 }
 
+# Quantity of students to generate
+students_quantity <- length(sector)
+
 #' Applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
-#' fusion the dataframes to create the final one
 #'
+#' @export
 #' @return a dataframe with the wishes
 random_data <- function() {
     df <- data.frame(
         "Nom complet" = paste(sample(sample_first_name, students_quantity, replace = TRUE), sample(sample_last_name, students_quantity, replace = TRUE)),
         "Classement" = sample(1:students_quantity),
-        "Q01_Filiere" = sample(sector, students_quantity, replace = TRUE),
+        "Q01_Filiere" = sample(sector, students_quantity),
         check.names = FALSE
     )
     df_wishes <- t(apply(df, 1, function(row) {

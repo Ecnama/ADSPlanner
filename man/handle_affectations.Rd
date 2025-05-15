@@ -4,7 +4,14 @@
 \alias{handle_affectations}
 \title{Function used by server to handle affectations}
 \usage{
-handle_affectations(input, output, df, capacities, remaining_capacities)
+handle_affectations(
+  input,
+  output,
+  df,
+  capacities,
+  remaining_depart_capacities,
+  remaining_session_capacities
+)
 }
 \arguments{
 \item{input}{Input data from the frontend}
@@ -15,7 +22,9 @@ handle_affectations(input, output, df, capacities, remaining_capacities)
 
 \item{capacities}{The total capacities of the departments over 3 sessions}
 
-\item{remaining_capacities}{The remaining capacities of the departments}
+\item{remaining_depart_capacities}{The remaining capacities of the departments}
+
+\item{remaining_session_capacities}{The remaining capacities of the sessions}
 }
 \description{
 Function used by server to handle affectations

@@ -18,14 +18,14 @@ test_that("assign_depart_hard only affects selected students", {
 
 # Test assign_depart_erase
 
-test_that("assign_depart_erase erases all affected departments", {
+test_that("assign_erase erases all affected departments", {
     result <- assign_depart_hard(parse_file_output, c(1, 2, 3), 1)
-    result <- assign_depart_erase(result$df)
+    result <- assign_erase(result$df)
     expect_equal(result$df$Aff_depart_1, c(NA_character_, NA_character_, NA_character_))
 })
 
-test_that("assign_depart_erase only affects selected students", {
+test_that("assign_erase only affects selected students", {
     result <- assign_depart_hard(parse_file_output, c(1, 2, 3), 1)
-    result <- assign_depart_erase(result$df, c(1, 2))
+    result <- assign_erase(result$df, c(1, 2))
     expect_equal(result$df$Aff_depart_1, c(NA_character_, NA_character_, parse_file_output$V1[3]))
 })

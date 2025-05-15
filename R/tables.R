@@ -103,7 +103,7 @@ filter_for_table <- function(df, table, input) {
             df[, !grepl("^Aff", names(df))]
         },
         "aff_depart" = {
-            if (input$filter_full) {
+            if (input$filter_full_depart) {
                 df <- df[sapply(seq_len(nrow(df)), function(i) {
                     sum(!is.na(df[i, grepl("^Aff_depart_", names(df))])) < NB_SESSIONS[df$Filiere[i]]
                 }), ]
@@ -118,6 +118,11 @@ filter_for_table <- function(df, table, input) {
             df[, !grepl("^Aff", names(df))]
         },
         "aff_session" = {
+            if (input$filter_full_session) {
+                df <- df[sapply(seq_len(nrow(df)), function(i) {
+                    sum(!is.na(df[i, grepl("^Aff_session_", names(df))])) < NB_SESSIONS[df$Filiere[i]]
+                }), ]
+            }
             df[["D\u00E9partements affect\u00E9s"]] <- apply(df[, grepl("^Aff_depart_", names(df))], 1, function(x) {
                 x <- x[!is.na(x)]
                 if (length(x) == 0) {

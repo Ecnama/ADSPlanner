@@ -2,8 +2,7 @@
 % Please edit documentation in R/random-data-generation.R
 \name{random_data}
 \alias{random_data}
-\title{Applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
-fusion the dataframes to create the final one}
+\title{Applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe}
 \usage{
 random_data()
 }
@@ -12,5 +11,4 @@ a dataframe with the wishes
 }
 \description{
 Applies wishes_generation to each line of the dataframe of the students, and adds the generated wishes in the dataframe
-fusion the dataframes to create the final one
 }

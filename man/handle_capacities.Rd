@@ -4,7 +4,14 @@
 \alias{handle_capacities}
 \title{Handle capacities on server}
 \usage{
-handle_capacities(input, output, df, capacities, remaining_capacities)
+handle_capacities(
+  input,
+  output,
+  df,
+  capacities,
+  remaining_depart_capacities,
+  remaining_session_capacities
+)
 }
 \arguments{
 \item{input}{Input data from the frontend}
@@ -15,7 +22,9 @@ handle_capacities(input, output, df, capacities, remaining_capacities)
 
 \item{capacities}{The reactive table of each departments capacities}
 
-\item{remaining_capacities}{The reactive table of the remaining capacities in each department}
+\item{remaining_depart_capacities}{The reactive table of the remaining capacities in each department}
+
+\item{remaining_session_capacities}{The reactive table of the remaining capacities in each session}
 }
 \description{
 Handle capacities on server
