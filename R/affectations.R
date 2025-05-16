@@ -182,7 +182,7 @@ handle_affectations <- function(input, output, df, capacities, remaining_depart_
             return()
         }
 
-        handle_operation(function(df, selection) assign_session_auto(df, selection, capacities()), sessions = TRUE)
+        handle_operation(function(df, selection) assign_session_auto(df, selection, remaining_session_capacities()), sessions = TRUE)
     })
 
     observeEvent(input$confirm_assign_session_manual, {
@@ -328,35 +328,29 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
 #'
 #' @param df The data frame with the students and affected departements
 #' @param selection The indices of students to assign
-#' @param capacities The total capacities of the departments over 3 sessions
+#' @param cap The remaining capacities of the departments per session
 #' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
-assign_session_auto <- function(df, selection, capacities) {
+assign_session_auto <- function(df, selection, cap) {
     showNotification("Calcul des affectations en cours...", type = "message")
-
-    capacities <- capacities / 3
-
-    nb_in_session <- vector("list", max(NB_SESSIONS))
 
     # Everything failed by default, when we assign students we'll remove them
     fails <- selection
 
     # Set a deterministic seed
-    set.seed(sum(capacities))
+    set.seed(sum(cap))
 
     calculate_heuristic <- function(perm, n_sessions, sessions_offset) {
         heur <- 0
-        for (d in names(capacities)) { # The point of this heuristic is to minimize the variation of the assigned sessions
+        for (d in names(cap)) { # The point of this heuristic is to minimize the variation of the assigned sessions
             numbers <- c()
 
-            for (n in seq_along(nb_in_session)) {
-                if (d %in% names(nb_in_session[[n]])) {
-                    numbers <- c(numbers, nb_in_session[[n]][d])
-                } else {
-                    numbers <- c(numbers, 0)
-                }
+            for (n in seq_len(nrow(cap))) {
+                numbers <- c(numbers, cap[n, d])
+
+                # Count numbers after the perm is applied
                 if (n > sessions_offset && n <= sessions_offset + n_sessions) {
                     if (perm[n - sessions_offset] == d) {
-                        numbers[length(numbers)] <- numbers[length(numbers)] + 1
+                        numbers[length(numbers)] <- numbers[length(numbers)] - 1
                     }
                 }
             }
@@ -399,12 +393,10 @@ assign_session_auto <- function(df, selection, capacities) {
             works <- TRUE
 
             # Check if the permutation respects the capacities
-            for (j in 1:n_sessions) {
-                if (perm[j] %in% names(nb_in_session[[j + sessions_offset]])) {
-                    if (nb_in_session[[j + sessions_offset]][perm[j]] >= capacities[[perm[j]]]) {
-                        works <- FALSE
-                        break
-                    }
+            for (j in seq_len(n_sessions)) {
+                if (cap[j + sessions_offset, perm[j]] <= 0) {
+                    works <- FALSE
+                    break
                 }
             }
 
@@ -417,24 +409,22 @@ assign_session_auto <- function(df, selection, capacities) {
         if (length(working_perms) == 0) {
             FALSE # No working permutation, backtracking
         } else {
+            # print(cap)
+
             sorted_indices <- order(heuristics)
 
             for (id in sorted_indices) { # Try again and again in heuristic order until we get to the end of the tree
-                for (j in 1:n_sessions) {
+                cap_backup <- cap
+                for (j in seq_len(n_sessions)) {
                     df[[paste0("Aff_session_", j + sessions_offset)]][i] <<- working_perms[[id]][j]
                     # print(paste("Affectation de", df$Nom[i], df$Prenom[i], "au departement", working_perms[[id]][j], "en session", j + sessions_offset))
 
                     # Update the department counter properly
-                    if (working_perms[[id]][j] %in% names(nb_in_session[[j + sessions_offset]])) {
-                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] + 1
-                    } else {
-                        nb_in_session[[j + sessions_offset]][working_perms[[id]][j]] <<- 1
-                    }
+                    cap[j + sessions_offset, working_perms[[id]][j]] <<- cap[j + sessions_offset, working_perms[[id]][j]] - 1
                 }
 
                 # If we assigned, then it's not a fail
                 fails <<- fails[fails != i]
-                nb_in_session_backup <- nb_in_session
 
                 # Recursive call
                 if (recursive_assign(sel[sel != i])) {
@@ -442,7 +432,7 @@ assign_session_auto <- function(df, selection, capacities) {
                 }
 
                 # Didn't work, rollback the changes
-                nb_in_session <- nb_in_session_backup
+                cap <<- cap_backup
             }
 
             FALSE # Nothing worked, backtracking

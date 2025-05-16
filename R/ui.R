@@ -88,7 +88,7 @@ ui <- page_sidebar(
                 ),
                 operation_tooltip(
                     actionButton("assign_session_auto", "Affectation automatique", style = "height:70px;"),
-                    "Affectation automatique des sessions en fonction des d\u00E9partements affect\u00E9s"
+                    "Affectation automatique des sessions en fonction des d\u00E9partements affect\u00E9s, peut prendre un certain temps"
                 ),
                 operation_tooltip(
                     actionButton("assign_session_manual", "Affectation manuelle", style = "height:70px;"),
