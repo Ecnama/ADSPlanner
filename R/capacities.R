@@ -17,7 +17,14 @@ handle_capacities <- function(input, output, df, capacities, remaining_depart_ca
     })
 
     observe({
-        if (!is.null(input$file)) {
+        if (!is.null(input$file)
+            && !is.na(input$capacity_EII)
+            && !is.na(input$capacity_ET)
+            && !is.na(input$capacity_INFO)
+            && !is.na(input$capacity_MA)
+            && !is.na(input$capacity_GCU)
+            && !is.na(input$capacity_GMA)
+            && !is.na(input$capacity_GPM)) {
             nb_sessions <- max(NB_SESSIONS)
             capacities(c(
                 "EII" = input$capacity_EII * nb_sessions,
