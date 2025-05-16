@@ -2,6 +2,9 @@ library(combinat)
 
 source("R/config.R")
 source("R/tables.R")
+source("R/capacities.R")
+
+AFF_SESSIONS_MAX_TIME <- 20 # Maximum time to assign sessions before stopping the process (in seconds)
 
 local({ # Check that the two vectors are consistent
     if (length(NB_SESSIONS) != length(SESSION_DEBUT)) {
@@ -182,7 +185,7 @@ handle_affectations <- function(input, output, df, capacities, remaining_depart_
             return()
         }
 
-        handle_operation(function(df, selection) assign_session_auto(df, selection, remaining_session_capacities()), sessions = TRUE)
+        handle_operation(function(df, selection) assign_session_auto(df, selection, capacities()), sessions = TRUE)
     })
 
     observeEvent(input$confirm_assign_session_manual, {
@@ -328,10 +331,15 @@ targeted_affectation <- function(df, selection, old_depart, new_depart) {
 #'
 #' @param df The data frame with the students and affected departements
 #' @param selection The indices of students to assign
-#' @param cap The remaining capacities of the departments per session
+#' @param capacities The total capacities of the departments over 3 sessions
 #' @return A list with (list: The input data frame with affected sessions, fails: The indices of students that could not be assigned)
-assign_session_auto <- function(df, selection, cap) {
+assign_session_auto <- function(df, selection, capacities) {
     showNotification("Calcul des affectations en cours...", type = "message")
+
+    # Erase selected affectations before assigning new ones
+    erased <- assign_erase(df, selection, sessions = TRUE)
+    df <- erased$df
+    cap <- calculate_session_capacities(df, capacities)
 
     # Everything failed by default, when we assign students we'll remove them
     fails <- selection
@@ -360,9 +368,21 @@ assign_session_auto <- function(df, selection, cap) {
         heur
     }
 
+    start_time <- Sys.time()
+    outatime <- FALSE
+
     recursive_assign <- function(sel) {
         if (length(sel) <= 0) {
             return(TRUE)
+        }
+
+        # If the function takes too long, stop it
+        if (Sys.time() - start_time > AFF_SESSIONS_MAX_TIME) {
+            # Reset all affectations that may have happened recursively but were in other branches of the tree
+            erased <- assign_erase(df, sel, sessions = TRUE)
+            df <<- erased$df
+            outatime <<- TRUE
+            return(FALSE)
         }
 
         i <- sel[1]
@@ -375,8 +395,8 @@ assign_session_auto <- function(df, selection, cap) {
         # Get all the departments the student was assigned to
         depart_vec <- sapply(seq_len(n_sessions), function(j) df[[paste0("Aff_depart_", j)]][i])
 
+        # Give up on this student if they have a missing department
         if (any(is.na(depart_vec))) {
-            # Give up if there's a missing department
             return(recursive_assign(sel[sel != i]))
         }
 
@@ -433,6 +453,10 @@ assign_session_auto <- function(df, selection, cap) {
 
                 # Didn't work, rollback the changes
                 cap <<- cap_backup
+
+                if (outatime) {
+                    return(FALSE)
+                }
             }
 
             FALSE # Nothing worked, backtracking
@@ -440,7 +464,11 @@ assign_session_auto <- function(df, selection, cap) {
     }
 
     if (!recursive_assign(sample(selection, length(selection), replace = FALSE))) {
-        showNotification("Les capacit\u00E9s pourraient ne pas \U00EAtre suffisantes pour ces contraintes.", type = "warning")
+        error_text <- "Les capacit\u00E9s pourraient ne pas \U00EAtre suffisantes pour ces contraintes."
+        if (outatime) {
+            error_text <- paste("Calcul des affections stopp\u00E9, il prenait trop de temps.", error_text)
+        }
+        showNotification(error_text, type = "warning")
     }
 
     list(df = df, fails = fails)

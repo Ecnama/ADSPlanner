@@ -156,7 +156,7 @@ calculate_depart_capacities <- function(df, capacities) {
 #' Calculate the new department capacities for each session
 #'
 #' @param df The reactive data frame of students's wishes and affectations
-#' @param capacities The reactive table of each departments capacities
+#' @param capacities The reactive table of each department's capacities
 calculate_session_capacities <- function(df, capacities) {
     capacities <- capacities / max(NB_SESSIONS)
     result <- data.frame(matrix(ncol = 0, nrow = max(NB_SESSIONS)))

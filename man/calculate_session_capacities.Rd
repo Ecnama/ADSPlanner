@@ -9,7 +9,7 @@ calculate_session_capacities(df, capacities)
 \arguments{
 \item{df}{The reactive data frame of students's wishes and affectations}
 
-\item{capacities}{The reactive table of each departments capacities}
+\item{capacities}{The reactive table of each department's capacities}
 }
 \description{
 Calculate the new department capacities for each session
