@@ -118,8 +118,8 @@ process_data <- function(file_data, data_source) {
         )
     }
 
-    data <- data[order(data$Classement), ]
-    rownames(data) <- data$Classement
+    data <- data[order(data$Classement, na.last = FALSE), ]
+    rownames(data) <- seq_len(nrow(data))
     data
 }
 

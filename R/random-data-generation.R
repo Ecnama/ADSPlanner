@@ -1,8 +1,7 @@
 library(openxlsx)
+library(randomNames)
 
-# Lists of first names/last names/sector to generate fake students
-sample_first_name <- c("Hector", "Mari", "Amance", "Peter", "Nathalie", "Agathe", "Romain", "Eve", "Marc", "Enzo")
-sample_last_name <- c("Dupont", "Nguyen", "Martin", "Garcia", "Fouquier", "Dubois", "Jack", "Boisu", "Zaky", "Mathy")
+# Lists of sector to generate fake students
 sector <- c(rep("1 : FC_FIRE (Filiere classique ou filiere internationale)", 245), rep("2 : EMIR", 15), rep("3 : MICA", 20))
 
 # Lists of available answers for each sector
@@ -45,8 +44,8 @@ students_quantity <- length(sector)
 #' @return a dataframe with the wishes
 random_data <- function() {
     df <- data.frame(
-        "Nom complet" = paste(sample(sample_first_name, students_quantity, replace = TRUE), sample(sample_last_name, students_quantity, replace = TRUE)),
-        "Classement" = sample(1:students_quantity),
+        "Nom complet" = randomNames::randomNames(students_quantity, which.names = "both", name.sep = " ", name.order = "first.last"),
+        "Classement" = sample(c(1:(students_quantity - 5), rep_len(NA, 5))),
         "Q01_Filiere" = sample(sector, students_quantity),
         check.names = FALSE
     )
