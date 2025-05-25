@@ -22,6 +22,24 @@ write_output <- function(df, capacities, file) {
     openxlsx::addWorksheet(wb, "ADSPlanner_capacites")
     openxlsx::writeData(wb, "ADSPlanner_capacites", cdf)
 
+    df$full_name <- paste(df$Nom, df$Prenom)
+    for (depart in names(capacities)) {
+        ddf <- list()
+        for (session in names(df)[grep("Aff_session_", names(df))]) {
+            session_num <- sub("Aff_session_", "", session)
+            ddf[[paste0("Session_", session_num)]] <- df[grepl(depart, df[[session]], fixed = TRUE), "full_name"]
+        }
+        # Pad columns to have equal length
+        max_len <- max(sapply(ddf, length))
+        ddf <- lapply(ddf, function(col) {
+            length(col) <- max_len
+            col
+        })
+        ddf <- as.data.frame(ddf)
+        openxlsx::addWorksheet(wb, paste0("ADSPlanner_", depart))
+        openxlsx::writeData(wb, paste0("ADSPlanner_", depart), ddf)
+    }
+
     openxlsx::saveWorkbook(wb, file)
 }
 
