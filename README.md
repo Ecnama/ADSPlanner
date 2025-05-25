@@ -2,6 +2,8 @@
 
 A tool to distribute INSA students into ADS sessions.
 
+[User documentation (in French)](userdoc/README.md).
+
 ## Installing & Running
 
 To install (or update) the ADS-Planner R package, simply clone this repo, start an interactive R session from the root folder and run :
