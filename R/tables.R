@@ -47,8 +47,9 @@ display_tables <- function(input, output, df) {
         {
             filter_for_table(df(), "vis", input)
         },
-        extensions = c("Scroller"),
+        rownames = FALSE,
         filter = "top",
+        extensions = c("Scroller"),
         selection = "none",
         server = FALSE
     )
@@ -57,6 +58,7 @@ display_tables <- function(input, output, df) {
         filtered <- filter_for_table(df(), "aff_depart", input)
         dt <- datatable(
             filtered,
+            rownames = FALSE,
             filter = "top",
             extensions = c("Select", "Buttons", "Scroller"),
             options = list(
@@ -77,6 +79,7 @@ display_tables <- function(input, output, df) {
         {
             filter_for_table(df(), "aff_session", input)
         },
+        rownames = FALSE,
         filter = "top",
         extensions = c("Select", "Buttons", "Scroller"),
         options = list(
