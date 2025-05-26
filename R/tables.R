@@ -58,7 +58,7 @@ display_tables <- function(input, output, df) {
         filtered <- filter_for_table(df(), "aff_depart", input)
         dt <- datatable(
             filtered,
-            rownames = FALSE,
+            rownames = TRUE,  # include rownames in the underlying data
             filter = "top",
             extensions = c("Select", "Buttons", "Scroller"),
             options = list(
@@ -241,6 +241,7 @@ color_departments_column <- function(df, filtered) {
         sprintf("    $('td:eq(' + %d + ')', row)", column),
         "    .css({'background-color': '#ffa5b7'});",
         "  }",
+        "  $(row).find('td:eq(0)').html('');",
         "}"
     )
 }
