@@ -1,5 +1,7 @@
 library(bslib)
 
+source("R/config.R")
+
 #' Custom tooltip with preset options for the operation buttons
 #'
 #' @param target The target element for the tooltip
@@ -32,13 +34,14 @@ ui <- page_sidebar(
         ),
         card(
             "Nombre de places par session",
-            numericInput("capacity_EII", "EII", value = 30, min = 0),
-            numericInput("capacity_ET", "E&T", value = 30, min = 0),
-            numericInput("capacity_INFO", "INFO", value = 30, min = 0),
-            numericInput("capacity_MA", "MA", value = 30, min = 0),
-            numericInput("capacity_GCU", "GCU", value = 30, min = 0),
-            numericInput("capacity_GMA", "GMA", value = 30, min = 0),
-            numericInput("capacity_GPM", "GPM", value = 30, min = 0)
+            do.call(tagList, lapply(DEPARTS, function(dept) {
+                numericInput(
+                    inputId = paste0("capacity_", dept),
+                    label = dept,
+                    value = 30,
+                    min = 0
+                )
+            }))
         ),
     ),
     navset_tab(

@@ -18,22 +18,11 @@ handle_capacities <- function(input, output, df, capacities, remaining_depart_ca
 
     observe({
         if (!is.null(input$file)
-            && !is.na(input$capacity_EII)
-            && !is.na(input$capacity_ET)
-            && !is.na(input$capacity_INFO)
-            && !is.na(input$capacity_MA)
-            && !is.na(input$capacity_GCU)
-            && !is.na(input$capacity_GMA)
-            && !is.na(input$capacity_GPM)) {
+            && all(sapply(DEPARTS, function(dep) !is.na(input[[paste0("capacity_", dep)]])))) {
             nb_sessions <- max(NB_SESSIONS)
-            capacities(c(
-                "EII" = input$capacity_EII * nb_sessions,
-                "E&T" = input$capacity_ET * nb_sessions,
-                "INFO" = input$capacity_INFO * nb_sessions,
-                "MA" = input$capacity_MA * nb_sessions,
-                "GCU" = input$capacity_GCU * nb_sessions,
-                "GMA" = input$capacity_GMA * nb_sessions,
-                "GPM" = input$capacity_GPM * nb_sessions
+            capacities(stats::setNames(
+                sapply(DEPARTS, function(dep) input[[paste0("capacity_", dep)]] * nb_sessions),
+                DEPARTS
             ))
             remaining_depart_capacities(calculate_depart_capacities(df(), capacities()))
             remaining_session_capacities(calculate_session_capacities(df(), capacities()))

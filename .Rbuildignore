@@ -2,3 +2,4 @@
 ^LICENSE\.md$
 ^\.github$
 ^\.vscode$
+^userdoc$

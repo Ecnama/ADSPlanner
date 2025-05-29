@@ -12,3 +12,13 @@ SESSION_DEBUT <- c(
     "EMIR" = 2,
     "MICA" = 2
 )
+
+DEPARTS <- c(
+    "EII",
+    "E&T",
+    "INFO",
+    "MA",
+    "GCU",
+    "GMA",
+    "GPM"
+)
