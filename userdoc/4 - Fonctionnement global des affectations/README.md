@@ -1,1 +1,0 @@
-# 4 - Fonctionnement global des affectations
