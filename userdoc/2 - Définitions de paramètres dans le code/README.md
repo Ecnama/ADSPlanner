@@ -1,4 +1,4 @@
-# 1 - Définitions de paramètres dans le code
+# 2 - Définitions de paramètres dans le code
 
 Il existe quelques paramètres de l'application qui n'ont pas été rendus configurables depuis l'interface. Cependant, leur modification reste facile.
 
@@ -21,3 +21,7 @@ Au cas où une filière viendrait à être ajoutée à l'INSA, il y aurait des m
 Il faudrait tout d'abord ajouter cette filière dans [`config.R`](../../R/config.R).
 
 Ensuite, le format du fichier d'entrée aura forcément changé, il faudra donc apporter les modifications appropriées à [`input.R`](../../R/input.R).
+
+## Réinstallation du package
+
+Une fois les changements effectués, il faudra réinstaller le package ADSPlanner, comme décrit dans [1 - Installation et lancement de l'application](../1%20-%20Installation%20et%20lancement%20de%20l'application/README.md).

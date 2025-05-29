@@ -8,9 +8,9 @@ Cette documentation utilisateur a pour but de détailler son utilisation du poin
 
 *Cliquez sur un lien pour vous rendre dans la partie correspondante.*
 
-[1 - Définitions de paramètres dans le code](1%20-%20D%C3%A9finitions%20de%20param%C3%A8tres%20dans%20le%20code/README.md)
+[1 - Installation et lancement de l'application](1%20-%20Installation%20et%20lancement%20de%20l%27application/README.md)
 
-[2 - Installation et lancement de l'application](2%20-%20Installation%20et%20lancement%20de%20l%27application/README.md)
+[2 - Définitions de paramètres dans le code](2%20-%20D%C3%A9finitions%20de%20param%C3%A8tres%20dans%20le%20code/README.md)
 
 [3 - Importation du questionnaire Moodle](3%20-%20Importation%20du%20questionnaire%20Moodle/README.md)
 
